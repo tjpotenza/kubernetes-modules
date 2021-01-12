@@ -1,13 +1,9 @@
-locals {
-  master_address = "master--${var.cluster_name}.${var.dns_zone}"
-}
-
 resource "aws_instance" "single_master" {
   count                  = var.ha_enabled ? 0 : 1
   ami                    = data.aws_ami.ami.id
   instance_type          = var.instance_type
   key_name               = var.key_name
-  user_data              = templatefile("${path.module}/bootstrap.sh", {master_address = local.master_address})
+  user_data              = data.template_file.bootstrap_sh.rendered
   vpc_security_group_ids = concat(
     values(data.aws_security_group.instance).*.id,
     var.security_group_ids,

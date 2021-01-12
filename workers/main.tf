@@ -1,8 +1,3 @@
-locals {
-  master_address     = "master--${var.cluster_name}.${var.dns_zone}"
-  node_token_address = "node-token--${var.cluster_name}.${var.dns_zone}"
-}
-
 resource "aws_launch_template" "workers" {
   name_prefix            = "${var.cluster_name}-worker"
   image_id               = data.aws_ami.ami.id
