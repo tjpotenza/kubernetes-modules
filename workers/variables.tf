@@ -1,1 +1,1 @@
-../masters/variables.tf
+../control_plane/variables.tf

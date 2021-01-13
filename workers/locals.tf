@@ -1,1 +1,1 @@
-../masters/locals.tf
+../control_plane/locals.tf

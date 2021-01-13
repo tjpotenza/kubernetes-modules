@@ -1,1 +1,1 @@
-../masters/data.tf
+../control_plane/data.tf
