@@ -30,7 +30,7 @@ CONFIG_FILE
 sudo mkdir -p "/etc/rancher/k3s"
 sudo echo "$config_yaml" > "/etc/rancher/k3s/config.yaml"
 
-curl -sfL https://get.k3s.io | sh -
+curl -sfL https://get.k3s.io | ${k3s_install_options} sh -
 
 kubectl=$(which kubectl)
 echo "$admin_yml" > "./admin.yml"
