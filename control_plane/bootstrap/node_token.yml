@@ -64,28 +64,11 @@ metadata:
   name: node-token
   namespace: default
 spec:
+  type: NodePort
   selector:
     app: node-token
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  annotations: {}
-  name: node-token
-  namespace: default
-spec:
-  rules:
-    - host: ${node_token_address}
-      http:
-        paths:
-          - backend:
-              service:
-                name: node-token
-                port:
-                  number: 80
-            path: /
-            pathType: Prefix
+      nodePort: 30000

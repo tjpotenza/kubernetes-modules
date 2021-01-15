@@ -10,12 +10,15 @@ resource "aws_instance" "single_master" {
     [ aws_security_group.cluster_member.id ],
   )
 
-  tags = {
-    Name    = "${var.cluster_name}-master"
-    Cluster = var.cluster_name
-    Role    = "master"
-    Address = local.master_address
-  }
+  tags = merge(
+    {
+      Name    = "${var.cluster_name}-master"
+      Cluster = var.cluster_name
+      Role    = "master"
+    },
+    local.control_plane_external_address_enabled ? { ExternalAddress = local.control_plane_external_address } : {},
+    local.control_plane_internal_address_enabled ? { InternalAddress = local.control_plane_internal_address } : {}
+  )
 }
 
 # Attaching the single master to our local ingress target group

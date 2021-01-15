@@ -54,7 +54,7 @@ resource "aws_lb_listener_rule" "local_private" {
   condition {
     host_header {
       values = concat(
-        ["*--${var.cluster_name}.${var.dns_zone}"],
+        ["*--${var.cluster_name}.${var.external_dns_zone}"],
         var.private_ingress_hostnames
       )
     }

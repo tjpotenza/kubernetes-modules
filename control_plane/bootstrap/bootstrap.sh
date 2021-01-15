@@ -10,8 +10,8 @@ config_yaml="\
 ---
 write-kubeconfig-mode: 0644
 tls-san:
-  - ${master_address}
   - $public_ip
+${control_plane_sans}
 "
 
 admin_yml=$(cat <<'CONFIG_FILE'

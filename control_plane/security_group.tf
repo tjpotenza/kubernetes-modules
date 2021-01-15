@@ -33,4 +33,12 @@ resource "aws_security_group" "cluster_member" {
     protocol    = "tcp"
     self        = true
   }
+
+  ingress {
+    description = "NodePort for Distributing NodeToken"
+    from_port   = 30000
+    to_port     = 30000
+    protocol    = "tcp"
+    self        = true
+  }
 }

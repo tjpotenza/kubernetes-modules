@@ -8,12 +8,14 @@ data "aws_subnet_ids" "main" {
   vpc_id = data.aws_vpc.main.id
 }
 
-data "aws_route53_zone" "ingress" {
-  name = var.dns_zone
+data "aws_route53_zone" "external" {
+  count = local.control_plane_external_address_enabled ? 1 : 0
+  name  = var.external_dns_zone
 }
 
-data "aws_route53_zone" "ingress_internal" {
-  name         = var.dns_zone
+data "aws_route53_zone" "internal" {
+  count        = local.control_plane_internal_address_enabled ? 1 : 0
+  name         = var.internal_dns_zone
   private_zone = true
 }
 
