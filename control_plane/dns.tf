@@ -11,8 +11,7 @@ resource "aws_route53_record" "control_plane_external" {
 
 # Record for Public Control Plane API endpoint
 resource "aws_route53_record" "control_plane_internal" {
-  count   = 0
-  # count   = local.control_plane_internal_address_enabled ? 1 : 0
+  count   = local.control_plane_internal_address_enabled ? 1 : 0
 
   zone_id = data.aws_route53_zone.internal[0].zone_id
   name    = local.control_plane_internal_address

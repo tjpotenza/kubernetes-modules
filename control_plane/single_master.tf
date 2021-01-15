@@ -14,7 +14,7 @@ resource "aws_instance" "single_master" {
     {
       Name    = "${var.cluster_name}-master"
       Cluster = var.cluster_name
-      Role    = "master"
+      Role    = "control-plane"
     },
     local.control_plane_external_address_enabled ? { ExternalAddress = local.control_plane_external_address } : {},
     local.control_plane_internal_address_enabled ? { InternalAddress = local.control_plane_internal_address } : {}
