@@ -1,8 +1,10 @@
-
+################################################################################
+# Shared Endpoint
+################################################################################
 resource "aws_route53_record" "shared_endpoint" {
   zone_id        = data.aws_route53_zone.dns_zone.zone_id
   name           = "${var.name}.${var.dns_zone}"
-  set_identifier = "${var.name}.${var.dns_zone}"
+  set_identifier = "${var.name}.${var.dns_zone} - ${local.region}"
   type           = "A"
 
   alias {
@@ -62,6 +64,9 @@ resource "aws_lb_listener_rule" "shared_endpoint" {
   }
 }
 
+################################################################################
+# Cluster Endpoints
+################################################################################
 resource "aws_route53_record" "cluster_endpoints" {
   for_each = local.cluster_endpoints_clusters
   zone_id  = data.aws_route53_zone.dns_zone.zone_id
