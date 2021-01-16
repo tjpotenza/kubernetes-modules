@@ -1,3 +1,21 @@
+
+resource "aws_route53_record" "shared_endpoint" {
+  zone_id        = data.aws_route53_zone.dns_zone.zone_id
+  name           = "${var.name}.${var.dns_zone}"
+  set_identifier = "${var.name}.${var.dns_zone}"
+  type           = "A"
+
+  alias {
+    name    = data.aws_lb.shared_endpoint.dns_name
+    zone_id = data.aws_lb.shared_endpoint.zone_id
+    evaluate_target_health = true
+  }
+
+  latency_routing_policy {
+    region = local.region
+  }
+}
+
 resource "aws_lb_listener_rule" "shared_endpoint" {
   listener_arn = data.aws_lb_listener.shared_endpoint.arn
 
@@ -44,6 +62,18 @@ resource "aws_lb_listener_rule" "shared_endpoint" {
   }
 }
 
+resource "aws_route53_record" "cluster_endpoints" {
+  for_each = local.cluster_endpoints_clusters
+  zone_id  = data.aws_route53_zone.dns_zone.zone_id
+  name     = "${var.name}--${each.value}.${var.dns_zone}"
+  type     = "A"
+
+  alias {
+    name    = data.aws_lb.cluster_endpoints.dns_name
+    zone_id = data.aws_lb.cluster_endpoints.zone_id
+    evaluate_target_health = true
+  }
+}
 
 resource "aws_lb_listener_rule" "cluster_endpoints" {
   for_each     = local.cluster_endpoints_clusters

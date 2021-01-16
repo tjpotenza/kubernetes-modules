@@ -11,6 +11,14 @@ data "aws_route53_zone" "dns_zone" {
   private_zone = var.is_dns_zone_internal
 }
 
+data "aws_lb" "shared_endpoint" {
+  arn  = var.alb_arns[local.region][var.shared_endpoint_type]
+}
+
+data "aws_lb" "cluster_endpoints" {
+  arn  = var.alb_arns[local.region][var.cluster_endpoints_type]
+}
+
 data "aws_lb_listener" "shared_endpoint" {
   load_balancer_arn = var.alb_arns[local.region][var.shared_endpoint_type]
   port              = var.alb_port
