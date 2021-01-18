@@ -1,78 +1,106 @@
-locals {
-  regions = distinct(concat(
-    keys(var.alb_arns),
-    keys(var.cluster_target_group_arns)
-  ))
+################################################################################
+# Shared Endpoint
+################################################################################
+resource "aws_route53_record" "shared_endpoint" {
+  zone_id        = data.aws_route53_zone.dns_zone.zone_id
+  name           = "${var.name}.${var.dns_zone}"
+  set_identifier = "${var.name}.${var.dns_zone} - ${local.region}"
+  type           = "A"
 
-  us-east-1_enabled = contains(local.regions, "us-east-1")
-  us-west-2_enabled = contains(local.regions, "us-west-2")
+  alias {
+    name    = data.aws_lb.shared_endpoint.dns_name
+    zone_id = data.aws_lb.shared_endpoint.zone_id
+    evaluate_target_health = true
+  }
+
+  latency_routing_policy {
+    region = local.region
+  }
 }
 
-provider "aws" {
-  alias  = "us-east-1"
-  region = "us-east-1"
-}
+resource "aws_lb_listener_rule" "shared_endpoint" {
+  listener_arn = data.aws_lb_listener.shared_endpoint.arn
 
-provider "aws" {
-  alias  = "us-west-2"
-  region = "us-west-2"
+  # This absolute dynamic nightmare's a consequences of a bug / quirk with aws_lb_listener_rule resource.
+  # It will not allow an action { forward { ... } } block to have only one target_group {} blocks, so we
+  # need a special case for when there's only one target_group associated versus when there are many.
+
+  dynamic "action" {
+    for_each = length(local.shared_endpoint_target_group_arns) == 1 ? local.shared_endpoint_target_group_arns : {}
+    content {
+      type             = "forward"
+      target_group_arn = action.value
+    }
+  }
+
+  dynamic "action" {
+    for_each = length(local.shared_endpoint_target_group_arns) > 1 ? { iterate = "once" } : {}
+    content {
+    type = "forward"
+      forward {
+        dynamic "target_group" {
+          for_each = local.shared_endpoint_target_group_arns
+          content {
+            arn = target_group.value
+          }
+        }
+      }
+    }
+  }
+
+  condition {
+    host_header {
+      values = [ "${var.name}.${var.dns_zone}" ]
+    }
+  }
+
+  dynamic "condition" {
+    for_each = length(var.cluster_endpoints_ingress_cidrs) > 0 ? {private = true} : {}
+    content {
+      source_ip {
+        values = var.cluster_endpoints_ingress_cidrs
+      }
+    }
+  }
 }
 
 ################################################################################
-# Actually Invoking the Module Itself, but in each Region
-#
-#   This is a janky hack and I hate it, but is the best approach to pulling off
-#   what I had in mind.  I *think* that it is currently impossible for providers
-#   to be assigned dynamically in something like a for_each, so there'd need to
-#   be *some* duplication somewhere.  The submodule accepts the same variables
-#  as this one, so this just passes all the variables through while setting a
-#  different provider for each supported region.  These invocations should all
-#  be identical outside the providers and count lines.
+# Cluster Endpoints
 ################################################################################
-module "us-east-1" {
-  providers = { aws = aws.us-east-1 }
-  count     = local.us-east-1_enabled ? 1 : 0
+resource "aws_route53_record" "cluster_endpoints" {
+  for_each = local.cluster_endpoints_clusters
+  zone_id  = data.aws_route53_zone.dns_zone.zone_id
+  name     = "${var.name}--${each.value}.${var.dns_zone}"
+  type     = "A"
 
-  source                          = "./regional_endpoints"
-  vpc_name                        = var.vpc_name
-  dns_zone                        = var.dns_zone
-  is_dns_zone_internal            = var.is_dns_zone_internal
-  name                            = var.name
-  alb_arns                        = var.alb_arns
-  alb_port                        = var.alb_port
-  dns_records_enabled             = var.dns_records_enabled
-  cluster_target_group_arns       = var.cluster_target_group_arns
-  target_port                     = var.target_port
-  healthcheck_path                = var.healthcheck_path
-  shared_endpoint_type            = var.shared_endpoint_type
-  shared_endpoint_ingress_cidrs   = var.shared_endpoint_ingress_cidrs
-  shared_endpoint_dns_regions     = var.shared_endpoint_dns_regions
-  shared_endpoint_clusters        = var.shared_endpoint_clusters
-  cluster_endpoints_type          = var.cluster_endpoints_type
-  cluster_endpoints_ingress_cidrs = var.cluster_endpoints_ingress_cidrs
-  cluster_endpoints_clusters      = var.cluster_endpoints_clusters
+  alias {
+    name    = data.aws_lb.cluster_endpoints.dns_name
+    zone_id = data.aws_lb.cluster_endpoints.zone_id
+    evaluate_target_health = true
+  }
 }
 
-module "us-west-2" {
-  providers = { aws = aws.us-west-2 }
-  count     = local.us-west-2_enabled ? 1 : 0
+resource "aws_lb_listener_rule" "cluster_endpoints" {
+  for_each     = local.cluster_endpoints_clusters
+  listener_arn = data.aws_lb_listener.cluster_endpoints.arn
 
-  source                          = "./regional_endpoints"
-  vpc_name                        = var.vpc_name
-  dns_zone                        = var.dns_zone
-  is_dns_zone_internal            = var.is_dns_zone_internal
-  name                            = var.name
-  alb_arns                        = var.alb_arns
-  alb_port                        = var.alb_port
-  dns_records_enabled             = var.dns_records_enabled
-  cluster_target_group_arns       = var.cluster_target_group_arns
-  target_port                     = var.target_port
-  healthcheck_path                = var.healthcheck_path
-  shared_endpoint_type            = var.shared_endpoint_type
-  shared_endpoint_ingress_cidrs   = var.shared_endpoint_ingress_cidrs
-  shared_endpoint_dns_regions     = var.shared_endpoint_dns_regions
-  shared_endpoint_clusters        = var.shared_endpoint_clusters
-  cluster_endpoints_type          = var.cluster_endpoints_type
-  cluster_endpoints_ingress_cidrs = var.cluster_endpoints_ingress_cidrs
-  cluster_endpoints_clusters      = var.cluster_endpoints_clusters
+  action {
+    type             = "forward"
+    target_group_arn = local.shared_endpoint_target_group_arns[each.value]
+  }
+
+  condition {
+    host_header {
+      values = [ "${var.name}--${each.value}.${var.dns_zone}" ]
+    }
+  }
+
+  dynamic "condition" {
+    for_each = length(var.cluster_endpoints_ingress_cidrs) > 0 ? {private = true} : {}
+    content {
+      source_ip {
+        values = var.cluster_endpoints_ingress_cidrs
+      }
+    }
+  }
 }
