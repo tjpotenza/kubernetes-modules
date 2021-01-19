@@ -1,4 +1,28 @@
 ################################################################################
+# Target Group Per Cluster
+################################################################################
+resource "aws_lb_target_group" "per_cluster" {
+  for_each             = local.clusters
+  protocol             = "HTTP"
+  port                 = var.target_port
+  vpc_id               = data.aws_vpc.main.id
+  deregistration_delay = 60
+
+  tags = {
+    Name = "${var.name}--${each.value}"
+  }
+
+  health_check {
+    path = var.healthcheck_path
+    port = var.target_port
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+################################################################################
 # Shared Endpoint
 ################################################################################
 resource "aws_route53_record" "shared_endpoint" {
@@ -26,22 +50,22 @@ resource "aws_lb_listener_rule" "shared_endpoint" {
   # need a special case for when there's only one target_group associated versus when there are many.
 
   dynamic "action" {
-    for_each = length(local.shared_endpoint_target_group_arns) == 1 ? local.shared_endpoint_target_group_arns : {}
+    for_each = length(local.shared_endpoint_clusters) == 1 ? local.shared_endpoint_clusters : []
     content {
       type             = "forward"
-      target_group_arn = action.value
+      target_group_arn = aws_lb_target_group.per_cluster[action.value].arn
     }
   }
 
   dynamic "action" {
-    for_each = length(local.shared_endpoint_target_group_arns) > 1 ? { iterate = "once" } : {}
+    for_each = length(local.shared_endpoint_clusters) > 1 ? { iterate = "once" } : {}
     content {
     type = "forward"
       forward {
         dynamic "target_group" {
-          for_each = local.shared_endpoint_target_group_arns
+          for_each = local.shared_endpoint_clusters
           content {
-            arn = target_group.value
+            arn = aws_lb_target_group.per_cluster[target_group.value].arn
           }
         }
       }
@@ -55,10 +79,10 @@ resource "aws_lb_listener_rule" "shared_endpoint" {
   }
 
   dynamic "condition" {
-    for_each = length(var.cluster_endpoints_ingress_cidrs) > 0 ? {private = true} : {}
+    for_each = length(local.shared_endpoint_ingress_cidrs) > 0 ? {private = true} : {}
     content {
       source_ip {
-        values = var.cluster_endpoints_ingress_cidrs
+        values = local.shared_endpoint_ingress_cidrs
       }
     }
   }
@@ -86,7 +110,7 @@ resource "aws_lb_listener_rule" "cluster_endpoints" {
 
   action {
     type             = "forward"
-    target_group_arn = local.shared_endpoint_target_group_arns[each.value]
+    target_group_arn = aws_lb_target_group.per_cluster[each.value].arn
   }
 
   condition {
@@ -96,10 +120,10 @@ resource "aws_lb_listener_rule" "cluster_endpoints" {
   }
 
   dynamic "condition" {
-    for_each = length(var.cluster_endpoints_ingress_cidrs) > 0 ? {private = true} : {}
+    for_each = length(local.cluster_endpoints_ingress_cidrs) > 0 ? {private = true} : {}
     content {
       source_ip {
-        values = var.cluster_endpoints_ingress_cidrs
+        values = local.cluster_endpoints_ingress_cidrs
       }
     }
   }

@@ -7,15 +7,6 @@ variable "vpc_name" {
   type = string
 }
 
-variable "ingress_lb_name" {
-  type = string
-}
-
-variable "ingress_lb_listener_port" {
-  type    = string
-  default = "443"
-}
-
 variable "internal_dns_zone" {
   description = "Zone name for internal DNS records.  Internal records will not be created if no value is provided."
   type        = string
@@ -74,19 +65,7 @@ variable "instances" {
   default     = 1
 }
 
-variable "public_ingress_hostnames" {
-  description = "A list of additional host names for the ALB to allow public traffic into."
-  type        = list
-  default     = []
-}
-
-variable "private_ingress_hostnames" {
-  description = "A list of additional host names for the ALB to allow private traffic into."
-  type        = list
-  default     = []
-}
-
-variable "shared_target_group_arns" {
+variable "target_group_arns" {
   description = "A map of the arns of shared-across-clusters target groups with which this cluster should be associated."
   type        = map
   default     = {}

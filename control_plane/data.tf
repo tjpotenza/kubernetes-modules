@@ -19,15 +19,6 @@ data "aws_route53_zone" "internal" {
   private_zone = true
 }
 
-data "aws_lb" "ingress" {
-  name = var.ingress_lb_name
-}
-
-data "aws_lb_listener" "ingress" {
-  load_balancer_arn = data.aws_lb.ingress.arn
-  port              = var.ingress_lb_listener_port
-}
-
 data "aws_ami" "ami" {
   name_regex  = var.ami_regex
   owners      = ["amazon"]

@@ -12,19 +12,19 @@ data "aws_route53_zone" "dns_zone" {
 }
 
 data "aws_lb" "shared_endpoint" {
-  arn  = var.alb_arns[local.region][var.shared_endpoint_type]
+  arn  = var.alb_arns[local.shared_endpoint_type]
 }
 
 data "aws_lb" "cluster_endpoints" {
-  arn  = var.alb_arns[local.region][var.cluster_endpoints_type]
+  arn  = var.alb_arns[local.cluster_endpoints_type]
 }
 
 data "aws_lb_listener" "shared_endpoint" {
-  load_balancer_arn = var.alb_arns[local.region][var.shared_endpoint_type]
+  load_balancer_arn = var.alb_arns[local.shared_endpoint_type]
   port              = var.alb_port
 }
 
 data "aws_lb_listener" "cluster_endpoints" {
-  load_balancer_arn = var.alb_arns[local.region][var.cluster_endpoints_type]
+  load_balancer_arn = var.alb_arns[local.cluster_endpoints_type]
   port              = var.alb_port
 }
