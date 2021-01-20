@@ -1,8 +1,30 @@
 ################################################################################
 # Target Group Per Cluster
 ################################################################################
-resource "aws_lb_target_group" "per_cluster" {
+resource "aws_lb_target_group" "shared_endpoint" {
+  name                 = "${var.name}--shared"
+  protocol             = "HTTP"
+  port                 = var.target_port
+  vpc_id               = data.aws_vpc.main.id
+  deregistration_delay = 60
+
+  tags = {
+    Name = "${var.name}--shared"
+  }
+
+  health_check {
+    path = var.healthcheck_path
+    port = var.target_port
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_lb_target_group" "cluster_endpoints" {
   for_each             = local.clusters
+  name                 = "${var.name}--${each.value}"
   protocol             = "HTTP"
   port                 = var.target_port
   vpc_id               = data.aws_vpc.main.id
@@ -45,31 +67,9 @@ resource "aws_route53_record" "shared_endpoint" {
 resource "aws_lb_listener_rule" "shared_endpoint" {
   listener_arn = data.aws_lb_listener.shared_endpoint.arn
 
-  # This absolute dynamic nightmare's a consequences of a bug / quirk with aws_lb_listener_rule resource.
-  # It will not allow an action { forward { ... } } block to have only one target_group {} blocks, so we
-  # need a special case for when there's only one target_group associated versus when there are many.
-
-  dynamic "action" {
-    for_each = length(local.shared_endpoint_clusters) == 1 ? local.shared_endpoint_clusters : []
-    content {
-      type             = "forward"
-      target_group_arn = aws_lb_target_group.per_cluster[action.value].arn
-    }
-  }
-
-  dynamic "action" {
-    for_each = length(local.shared_endpoint_clusters) > 1 ? { iterate = "once" } : {}
-    content {
-    type = "forward"
-      forward {
-        dynamic "target_group" {
-          for_each = local.shared_endpoint_clusters
-          content {
-            arn = aws_lb_target_group.per_cluster[target_group.value].arn
-          }
-        }
-      }
-    }
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.shared_endpoint.arn
   }
 
   condition {
@@ -110,7 +110,7 @@ resource "aws_lb_listener_rule" "cluster_endpoints" {
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.per_cluster[each.value].arn
+    target_group_arn = aws_lb_target_group.cluster_endpoints[each.value].arn
   }
 
   condition {
