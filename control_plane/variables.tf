@@ -77,14 +77,12 @@ variable "private_cidrs" {
   default     = []
 }
 
-variable "alb_rule_priorities" {
-  description = "Priority values to assign to the ASG Listener Rule for routing public and private traffic to the cluster.  Must be an array of two values, and each priority for Local Listener Rules must be lower than the priority assigned to the Global Listener Rules."
-  type        = list
-  default     = [null, null]
+variable "external" {
+  description = "Config for external access to the cluster."
+  default     = {}
 }
 
-variable "public_services" {
-  description = "List of service names that will be made publically accessible under hostnames of format [{service}--{cluster_name}.{dns_zone}]."
-  type        = list
-  default     = []
+variable "internal" {
+  description = "Config for internal access to the cluster."
+  default     = {}
 }

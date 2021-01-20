@@ -1,3 +1,5 @@
+data "aws_region" "current" {}
+
 data "aws_vpc" "main" {
   tags = {
     name = var.vpc_name
@@ -9,14 +11,26 @@ data "aws_subnet_ids" "main" {
 }
 
 data "aws_route53_zone" "external" {
-  count = local.control_plane_external_address_enabled ? 1 : 0
-  name  = var.external_dns_zone
+  count = local.external_dns_zone != "" ? 1 : 0
+  name  = local.external_dns_zone
 }
 
 data "aws_route53_zone" "internal" {
-  count        = local.control_plane_internal_address_enabled ? 1 : 0
-  name         = var.internal_dns_zone
+  count        = local.internal_dns_zone != "" ? 1 : 0
+  name         = local.internal_dns_zone
   private_zone = true
+}
+
+data "aws_lb_listener" "external" {
+  count             = local.external_ingress_enabled ? 1 : 0
+  load_balancer_arn = lookup(local.external_ingress, "alb_arn", "")
+  port              = lookup(local.external_ingress, "alb_port", 443)
+}
+
+data "aws_lb_listener" "internal" {
+  count             = local.internal_ingress_enabled ? 1 : 0
+  load_balancer_arn = lookup(local.internal_ingress, "alb_arn", "")
+  port              = lookup(local.internal_ingress, "alb_port", 443)
 }
 
 data "aws_ami" "ami" {
