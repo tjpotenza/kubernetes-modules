@@ -71,12 +71,6 @@ variable "target_group_arns" {
   default     = {}
 }
 
-variable "private_cidrs" {
-  description = "List of CIDRs that should be permitted to access 'private' hostnames and services on the cluster."
-  type        = list
-  default     = []
-}
-
 variable "external" {
   description = "Config for external access to the cluster."
   default     = {}
