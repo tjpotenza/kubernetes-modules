@@ -14,6 +14,6 @@ locals {
     local.internal_control_plane_address != "" ? [local.internal_control_plane_address] : [],
   )
 
-  external_ingress_enabled = local.external_dns_zone != "" && lookup(local.external_ingress, "alb_arn", "") != ""
-  internal_ingress_enabled = local.internal_dns_zone != "" && lookup(local.internal_ingress, "alb_arn", "") != ""
+  external_ingress_enabled = lookup(local.external_ingress, "enabled", false)
+  internal_ingress_enabled = lookup(local.internal_ingress, "enabled", false)
 }

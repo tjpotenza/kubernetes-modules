@@ -21,15 +21,27 @@ data "aws_route53_zone" "internal" {
   private_zone = true
 }
 
+data "aws_lb" "external" {
+  count = local.external_ingress_enabled ? 1 : 0
+  arn   = lookup(local.external_ingress, "alb_arn", null)
+  name  = lookup(local.external_ingress, "alb_name", null)
+}
+
+data "aws_lb" "internal" {
+  count = local.internal_ingress_enabled ? 1 : 0
+  arn   = lookup(local.internal_ingress, "alb_arn", null)
+  name  = lookup(local.internal_ingress, "alb_name", null)
+}
+
 data "aws_lb_listener" "external" {
   count             = local.external_ingress_enabled ? 1 : 0
-  load_balancer_arn = lookup(local.external_ingress, "alb_arn", "")
+  load_balancer_arn = data.aws_lb.external[0].arn
   port              = lookup(local.external_ingress, "alb_port", 443)
 }
 
 data "aws_lb_listener" "internal" {
   count             = local.internal_ingress_enabled ? 1 : 0
-  load_balancer_arn = lookup(local.internal_ingress, "alb_arn", "")
+  load_balancer_arn = data.aws_lb.internal[0].arn
   port              = lookup(local.internal_ingress, "alb_port", 443)
 }
 
