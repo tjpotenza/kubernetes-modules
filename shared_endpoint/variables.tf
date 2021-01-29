@@ -84,3 +84,8 @@ variable "stickiness_duration" {
   type        = number
   default     = 30
 }
+
+variable "shared_target_group" {
+  description = "(Optional) Whether to enable the creation of a shared Target Group, and settings to assign it.  See locals.tf for options and defaults."
+  default     = {}
+}
