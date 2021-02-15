@@ -1,11 +1,7 @@
 locals {
-  k3s_install_options = (
-    var.k3s_version != "" ? (
-      "INSTALL_K3S_VERSION=${var.k3s_version}"
-    ) : (
-      "INSTALL_K3S_CHANNEL=${var.k3s_channel}"
-    )
-  )
+  k3s_install_options = join(" ", [
+    var.k3s_version != "" ? "INSTALL_K3S_VERSION=${var.k3s_version}" : "INSTALL_K3S_CHANNEL=${var.k3s_channel}"
+  ])
 }
 
 data "template_file" "admin_yml" {

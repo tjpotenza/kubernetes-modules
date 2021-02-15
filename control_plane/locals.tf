@@ -6,8 +6,8 @@ locals {
   external_ingress  = lookup(var.external, "ingress", {})
   internal_ingress  = lookup(var.internal, "ingress", {})
 
-  external_control_plane_address = "control-plane--${var.cluster_name}.${local.region}.${local.external_dns_zone}"
-  internal_control_plane_address = "control-plane--${var.cluster_name}.${local.region}.${local.internal_dns_zone}"
+  external_control_plane_address = local.external_dns_zone != "" ? "control-plane--${var.cluster_name}.${local.region}.${local.external_dns_zone}" : ""
+  internal_control_plane_address = local.internal_dns_zone != "" ? "control-plane--${var.cluster_name}.${local.region}.${local.internal_dns_zone}" : ""
 
   control_plane_sans = concat(
     local.external_control_plane_address != "" ? [local.external_control_plane_address] : [],
