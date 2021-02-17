@@ -10,6 +10,13 @@ resource "aws_instance" "single_master" {
     [ aws_security_group.cluster_member.id ],
   )
 
+  dynamic "credit_specification" {
+    for_each = var.instance_cpu_credits != null ? {enabled = true} : {}
+    content {
+      cpu_credits = var.instance_cpu_credits
+    }
+  }
+
   tags = merge(
     {
       Name    = "${var.cluster_name}-master"

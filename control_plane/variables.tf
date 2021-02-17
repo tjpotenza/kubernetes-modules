@@ -24,6 +24,11 @@ variable "instance_type" {
   default = "t2.micro"
 }
 
+variable "instance_cpu_credits" {
+  type    = string
+  default = null
+}
+
 variable "security_group_names" {
   type    = list
   default = []
