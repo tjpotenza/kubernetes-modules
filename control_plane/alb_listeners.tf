@@ -34,7 +34,7 @@ resource "aws_lb_listener_rule" "internal" {
 
   condition {
     host_header {
-      values = [ "*--${var.cluster_name}.${local.region}.${var.internal_dns_zone}" ]
+      values = [ "*--${var.cluster_name}.${local.region}.${local.internal_dns_zone}" ]
     }
   }
 

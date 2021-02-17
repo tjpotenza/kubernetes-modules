@@ -7,18 +7,6 @@ variable "vpc_name" {
   type = string
 }
 
-variable "internal_dns_zone" {
-  description = "Zone name for internal DNS records.  Internal records will not be created if no value is provided."
-  type        = string
-  default     = ""
-}
-
-variable "external_dns_zone" {
-  description = "Zone name for external DNS records.  External records will not be created if no value is provided."
-  type        = string
-  default     = ""
-}
-
 variable "instance_type" {
   type    = string
   default = "t2.micro"
