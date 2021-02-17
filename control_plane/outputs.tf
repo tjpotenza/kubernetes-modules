@@ -10,6 +10,9 @@ output "cluster_member_security_group_id" {
   value = aws_security_group.cluster_member.id
 }
 
-output "target_group_arn" {
-  value = aws_lb_target_group.ingress.arn
+output "target_group_arns" {
+  value = {
+    internal = local.internal_ingress_enabled ? aws_lb_target_group.internal[0].arn : null
+    external = local.external_ingress_enabled ? aws_lb_target_group.external[0].arn : null
+  }
 }

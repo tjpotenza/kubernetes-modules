@@ -28,16 +28,22 @@ resource "aws_instance" "single_master" {
   )
 }
 
-# Attaching the single master to our local ingress target group
-resource "aws_lb_target_group_attachment" "single_master" {
-  count            = var.ha_enabled ? 0 : 1
-  target_group_arn = aws_lb_target_group.ingress.arn
+# Attaching the single master to our local ingress target groups
+resource "aws_lb_target_group_attachment" "single_master_internal" {
+  count            = !var.ha_enabled && local.internal_ingress_enabled ? 1 : 0
+  target_group_arn = aws_lb_target_group.internal[0].arn
+  target_id        = aws_instance.single_master[0].id
+}
+
+resource "aws_lb_target_group_attachment" "single_master_external" {
+  count            = !var.ha_enabled && local.external_ingress_enabled ? 1 : 0
+  target_group_arn = aws_lb_target_group.external[0].arn
   target_id        = aws_instance.single_master[0].id
 }
 
 # Attaching the single master to any shared ingress target groups
 resource "aws_lb_target_group_attachment" "single_master_shared" {
-  for_each          = var.ha_enabled ? {} : var.target_group_arns
+  for_each          = !var.ha_enabled ? var.target_group_arns : {}
   target_group_arn  = each.value
   target_id         = aws_instance.single_master[0].id
 }

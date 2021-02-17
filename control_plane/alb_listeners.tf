@@ -4,7 +4,7 @@ resource "aws_lb_listener_rule" "external" {
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.ingress.arn
+    target_group_arn = aws_lb_target_group.external[0].arn
   }
 
   condition {
@@ -29,7 +29,7 @@ resource "aws_lb_listener_rule" "internal" {
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.ingress.arn
+    target_group_arn = aws_lb_target_group.internal[0].arn
   }
 
   condition {
