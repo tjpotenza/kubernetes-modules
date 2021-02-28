@@ -2,6 +2,7 @@
 set -o errexit -o pipefail
 
 public_ip=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+availability_zone=$(curl http://169.254.169.254/latest/meta-data/placement/availability-zone)
 
 ################################################################################
 # File Templates
@@ -30,7 +31,7 @@ CONFIG_FILE
 sudo mkdir -p "/etc/rancher/k3s"
 sudo echo "$config_yaml" > "/etc/rancher/k3s/config.yaml"
 
-curl -sfL https://get.k3s.io | ${k3s_install_options} sh -
+curl -sfL https://get.k3s.io | ${k3s_install_options} sh -s - --node-label="topology.kubernetes.io/zone=$availability_zone"
 
 kubectl=$(which kubectl)
 echo "$admin_yml" > "./admin.yml"
