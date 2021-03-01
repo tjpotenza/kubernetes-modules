@@ -106,7 +106,7 @@ spec:
         emptyDir:
           medium: Memory
       nodeSelector:
-        node-role.kubernetes.io/master: "true"
+        node-role.kubernetes.io/control-plane: "true"
 ---
 apiVersion: v1
 kind: Service

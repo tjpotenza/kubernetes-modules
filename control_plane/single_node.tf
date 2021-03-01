@@ -1,4 +1,4 @@
-resource "aws_instance" "single_master" {
+resource "aws_instance" "single_node" {
   count                  = var.ha_enabled ? 0 : 1
   ami                    = data.aws_ami.ami.id
   instance_type          = var.instance_type
@@ -19,7 +19,7 @@ resource "aws_instance" "single_master" {
 
   tags = merge(
     {
-      Name    = "${var.cluster_name}-master"
+      Name    = "${var.cluster_name}-control-plane"
       Cluster = var.cluster_name
       Role    = "control-plane"
     },
@@ -28,22 +28,22 @@ resource "aws_instance" "single_master" {
   )
 }
 
-# Attaching the single master to our local ingress target groups
-resource "aws_lb_target_group_attachment" "single_master_internal" {
+# Attaching the single node to our local ingress target groups
+resource "aws_lb_target_group_attachment" "single_node_internal" {
   count            = !var.ha_enabled && local.internal_ingress_enabled ? 1 : 0
   target_group_arn = aws_lb_target_group.internal[0].arn
-  target_id        = aws_instance.single_master[0].id
+  target_id        = aws_instance.single_node[0].id
 }
 
-resource "aws_lb_target_group_attachment" "single_master_external" {
+resource "aws_lb_target_group_attachment" "single_node_external" {
   count            = !var.ha_enabled && local.external_ingress_enabled ? 1 : 0
   target_group_arn = aws_lb_target_group.external[0].arn
-  target_id        = aws_instance.single_master[0].id
+  target_id        = aws_instance.single_node[0].id
 }
 
-# Attaching the single master to any shared ingress target groups
-resource "aws_lb_target_group_attachment" "single_master_shared" {
+# Attaching the single node to any shared ingress target groups
+resource "aws_lb_target_group_attachment" "single_node_shared" {
   for_each          = !var.ha_enabled ? var.target_group_arns : {}
   target_group_arn  = each.value
-  target_id         = aws_instance.single_master[0].id
+  target_id         = aws_instance.single_node[0].id
 }
