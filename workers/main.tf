@@ -1,18 +1,13 @@
-locals {
-  k3s_install_options = join(" ", [
-    var.k3s_version != "" ? "INSTALL_K3S_VERSION=${var.k3s_version}" : "INSTALL_K3S_CHANNEL=${var.k3s_channel}"
-  ])
-}
-
 resource "aws_launch_template" "workers" {
   name_prefix            = "${var.cluster_name}-worker"
   image_id               = data.aws_ami.ami.id
   instance_type          = var.instance_type
   key_name               = var.key_name
-  user_data              = base64encode(templatefile("${path.module}/bootstrap.sh", {
-    control_plane_address = local.internal_control_plane_address
-    k3s_install_options   = local.k3s_install_options
-  }))
+  user_data              = base64encode(data.template_file.bootstrap_sh.rendered)
+  # user_data              = base64encode(templatefile("${path.module}/bootstrap.sh", {
+  #   control_plane_address = local.internal_control_plane_address
+  #   k3s_install_options   = local.k3s_install_options
+  # }))
   vpc_security_group_ids = concat(
     values(data.aws_security_group.instance).*.id,
     var.security_group_ids

@@ -1,0 +1,12 @@
+[Unit]
+Description=Drain running pods and remove the node from a cluster
+After=${kubernetes_unit}.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStop=/usr/local/bin/graceful-shutdown.sh
+TimeoutStopSec=600
+
+[Install]
+WantedBy=multi-user.target
