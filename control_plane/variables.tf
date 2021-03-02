@@ -1,43 +1,52 @@
 variable "ha_enabled" {
-  type    = bool
-  default = false
+  description = "Control Plane: Whether the control plane is using an HA-compatible data store.  Runs as a single node using internal storage if false."
+  type        = bool
+  default     = false
 }
 
 variable "vpc_name" {
-  type = string
+  description = "Name for the VPC within which the cluster will be created, based on the VPC's 'Name' tag."
+  type        = string
 }
 
 variable "instance_type" {
-  type    = string
-  default = "t2.micro"
+  description = "Instance type to use when creating nodes."
+  type        = string
+  default     = "t2.micro"
 }
 
 variable "instance_cpu_credits" {
-  type    = string
-  default = null
+  description = "The credit option for CPU usage. Can be 'standard' or 'unlimited'. T3 instances are launched as unlimited by default. T2 instances are launched as standard by default."
+  type        = string
+  default     = null
 }
 
 variable "security_group_names" {
-  type    = list
-  default = []
+  description = "List of additional security groups by name which should be associated with each instance."
+  type        = list
+  default     = []
 }
 
 variable "security_group_ids" {
-  type    = list
-  default = []
+  description = "List of additional security groups by id which should be associated with each instance."
+  type        = list
+  default     = []
 }
 
 variable "cluster_name" {
-  type = string
+  description = "A unique name or identifier for the cluster."
+  type        = string
 }
 
 variable "key_name" {
-  type    = string
-  default = null
+  description = "Name for the SSH keypair to associate with each instance."
+  type        = string
+  default     = null
 }
 
 variable "ami_regex" {
-  type    = string
+  description = "The regular expression to use when looking up the AMI by name to use for each instance."
+  type        = string
 }
 
 variable "k3s_channel" {
