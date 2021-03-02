@@ -4,9 +4,28 @@ variable "ha_enabled" {
   default     = false
 }
 
-variable "vpc_name" {
-  description = "Name for the VPC within which the cluster will be created, based on the VPC's 'Name' tag."
+variable "vpc_id" {
+  description = "ID for the VPC within which resources will be created."
   type        = string
+  default     = null
+}
+
+variable "subnet_ids" {
+  description = "List of subnets within which resources will be created."
+  type        = list
+  default     = null
+}
+
+variable "vpc_tags" {
+  description = "Tags to target when looking up the VPC within which resources will be created.  Not used if vpc_id is set."
+  type        = map
+  default     = null
+}
+
+variable "subnet_filters" {
+  description = "Map of filters to be use when looking up subnets.  Not used if subnet_ids is set."
+  type        = map
+  default     = {}
 }
 
 variable "instance_type" {

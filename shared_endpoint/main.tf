@@ -18,7 +18,7 @@ resource "aws_route53_record" "shared_endpoint" {
 
 resource "aws_lb_target_group" "shared" {
   count                = local.shared_target_group_enabled ? 1 : 0
-  vpc_id               = data.aws_vpc.main.id
+  vpc_id               = local.vpc_id
   protocol             = local.shared_target_group_protocol
   port                 = local.shared_target_group_port
   deregistration_delay = local.shared_target_group_deregistration_delay

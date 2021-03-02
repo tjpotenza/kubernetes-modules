@@ -1,6 +1,13 @@
-variable "vpc_name" {
-  default     = "Name for the VPC within which everything should be created."
+variable "vpc_id" {
+  description = "ID for the VPC within which resources will be created."
   type        = string
+  default     = null
+}
+
+variable "vpc_tags" {
+  description = "Tags to target when looking up the VPC within which resources will be created.  Not used if vpc_id is set."
+  type        = map
+  default     = null
 }
 
 variable "dns_zone" {

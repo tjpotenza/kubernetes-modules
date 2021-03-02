@@ -1,6 +1,6 @@
 resource "aws_security_group" "cluster_member" {
   name        = "${var.cluster_name}-instance-sg"
-  vpc_id      = data.aws_vpc.main.id
+  vpc_id      = local.vpc_id
 
   ingress {
     description = "Control Plane API Endpoint"

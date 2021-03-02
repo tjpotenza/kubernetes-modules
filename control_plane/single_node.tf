@@ -4,6 +4,7 @@ resource "aws_instance" "single_node" {
   instance_type          = var.instance_type
   key_name               = var.key_name
   user_data              = data.template_file.bootstrap_sh.rendered
+  subnet_id              = length(local.subnet_ids) == 1 ? local.subnet_ids[0] : null
   vpc_security_group_ids = concat(
     values(data.aws_security_group.instance).*.id,
     var.security_group_ids,

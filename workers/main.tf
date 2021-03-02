@@ -36,7 +36,7 @@ resource "aws_launch_template" "workers" {
 
 resource "aws_autoscaling_group" "workers" {
   name                = "${var.cluster_name}-workers"
-  vpc_zone_identifier = data.aws_subnet_ids.main.ids
+  vpc_zone_identifier = local.subnet_ids
   desired_capacity    = var.instances
   max_size            = var.instances
   min_size            = var.instances

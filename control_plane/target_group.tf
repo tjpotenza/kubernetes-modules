@@ -3,7 +3,7 @@ resource "aws_lb_target_group" "external" {
   name                 = "ingress-cluster-external-${var.cluster_name}"
   protocol             = "HTTP"
   port                 = 80
-  vpc_id               = data.aws_vpc.main.id
+  vpc_id               = local.vpc_id
   deregistration_delay = 60
 
   tags = {
@@ -25,7 +25,7 @@ resource "aws_lb_target_group" "internal" {
   name                 = "ingress-cluster-internal-${var.cluster_name}"
   protocol             = "HTTP"
   port                 = 80
-  vpc_id               = data.aws_vpc.main.id
+  vpc_id               = local.vpc_id
   deregistration_delay = 60
 
   tags = {

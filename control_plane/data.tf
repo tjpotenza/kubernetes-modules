@@ -1,13 +1,29 @@
 data "aws_region" "current" {}
 
 data "aws_vpc" "main" {
-  tags = {
-    name = var.vpc_name
-  }
+  count = var.vpc_id == null ? 1 : 0
+  tags  = var.vpc_tags
+}
+
+locals {
+  vpc_id = (var.vpc_id == null ? data.aws_vpc.main[0].id : var.vpc_id)
 }
 
 data "aws_subnet_ids" "main" {
-  vpc_id = data.aws_vpc.main.id
+  count  = var.subnet_ids == null ? 1 : 0
+  vpc_id = local.vpc_id
+
+  dynamic "filter" {
+    for_each = var.subnet_filters
+    content {
+      name   = filter.key
+      values = filter.value
+    }
+  }
+}
+
+locals {
+  subnet_ids = (var.subnet_ids == null ? data.aws_subnet_ids.main[0].ids : var.subnet_ids)
 }
 
 data "aws_route53_zone" "external" {

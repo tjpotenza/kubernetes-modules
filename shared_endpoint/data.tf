@@ -1,9 +1,12 @@
 data "aws_region" "current" {}
 
 data "aws_vpc" "main" {
-  tags = {
-    name = var.vpc_name
-  }
+  count = var.vpc_id == null ? 1 : 0
+  tags  = var.vpc_tags
+}
+
+locals {
+  vpc_id = (var.vpc_id == null ? data.aws_vpc.main[0].id : var.vpc_id)
 }
 
 data "aws_route53_zone" "dns_zone" {
