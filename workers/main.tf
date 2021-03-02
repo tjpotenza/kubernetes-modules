@@ -12,6 +12,23 @@ resource "aws_launch_template" "workers" {
     values(data.aws_security_group.instance).*.id,
     var.security_group_ids
   )
+
+  dynamic "block_device_mappings" {
+    # Only create this block if any values are set within var.root_block_device
+    for_each = var.root_block_device != {} ? { enabled = true } : {}
+
+    content {
+      device_name = lookup(var.root_block_device, "device_name", "/dev/xvda")
+
+      ebs {
+        volume_type           = lookup(var.root_block_device, "volume_type", null)
+        volume_size           = lookup(var.root_block_device, "volume_size", null)
+        iops                  = lookup(var.root_block_device, "iops", null)
+        delete_on_termination = lookup(var.root_block_device, "delete_on_termination", null)
+        encrypted             = lookup(var.root_block_device, "encrypted", null)
+      }
+    }
+  }
 }
 
 resource "aws_autoscaling_group" "workers" {

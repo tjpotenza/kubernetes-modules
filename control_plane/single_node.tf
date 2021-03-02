@@ -17,6 +17,14 @@ resource "aws_instance" "single_node" {
     }
   }
 
+  root_block_device {
+    volume_type           = lookup(var.root_block_device, "volume_type", null)
+    volume_size           = lookup(var.root_block_device, "volume_size", null)
+    iops                  = lookup(var.root_block_device, "iops", null)
+    delete_on_termination = lookup(var.root_block_device, "delete_on_termination", null)
+    encrypted             = lookup(var.root_block_device, "encrypted", null)
+  }
+
   tags = merge(
     {
       Name    = "${var.cluster_name}-control-plane"
