@@ -10,19 +10,19 @@ resource "aws_instance" "single_node" {
     [ aws_security_group.cluster_member.id ],
   )
 
-  dynamic "credit_specification" {
-    for_each = var.instance_cpu_credits != null ? {enabled = true} : {}
-    content {
-      cpu_credits = var.instance_cpu_credits
-    }
-  }
-
   root_block_device {
     volume_type           = lookup(var.root_block_device, "volume_type", null)
     volume_size           = lookup(var.root_block_device, "volume_size", null)
     iops                  = lookup(var.root_block_device, "iops", null)
     delete_on_termination = lookup(var.root_block_device, "delete_on_termination", null)
     encrypted             = lookup(var.root_block_device, "encrypted", null)
+  }
+
+  dynamic "credit_specification" {
+    for_each = var.instance_cpu_credits != null ? { enabled = true } : {}
+    content {
+      cpu_credits = var.instance_cpu_credits
+    }
   }
 
   tags = merge(

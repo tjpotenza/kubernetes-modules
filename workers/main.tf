@@ -25,6 +25,13 @@ resource "aws_launch_template" "workers" {
       }
     }
   }
+
+  dynamic "credit_specification" {
+    for_each = var.instance_cpu_credits != null ? { enabled = true } : {}
+    content {
+      cpu_credits = var.instance_cpu_credits
+    }
+  }
 }
 
 resource "aws_autoscaling_group" "workers" {
