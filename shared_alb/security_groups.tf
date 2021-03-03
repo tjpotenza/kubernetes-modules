@@ -1,17 +1,36 @@
 resource "aws_security_group" "upstream" {
   name        = "${var.name}-upstream"
-  vpc_id      = var.vpc_id
+  vpc_id      = local.vpc_id
 
   tags = {
     ALB = var.name
   }
 
-  ingress = []
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = var.ingress_cidr_blocks
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = var.ingress_cidr_blocks
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = var.egress_cidr_blocks
+  }
 }
 
 resource "aws_security_group" "downstream" {
   name        = "${var.name}-downstream"
-  vpc_id      = var.vpc_id
+  vpc_id      = local.vpc_id
 
   tags = {
     ALB = var.name

@@ -10,14 +10,15 @@ output "zone_id" {
   value = aws_lb.alb.zone_id
 }
 
-output "upstream_sg_id" {
-  value = aws_security_group.upstream.id
+output "security_group_ids" {
+  value = {
+    upstream   = aws_security_group.upstream.id
+    downstream = aws_security_group.downstream.id
+  }
 }
 
-output "downstream_sg_id" {
-  value = aws_security_group.downstream.id
-}
-
-output "listener_443_arn" {
-  value = aws_lb_listener.ingress_443.arn
+output "listener_arns" {
+  value = {
+    "443" = aws_lb_listener.ingress_443.arn
+  }
 }

@@ -8,9 +8,9 @@ resource "aws_lb" "alb" {
   security_groups    = concat(
     values(data.aws_security_group.from_names).*.id,
     [aws_security_group.upstream.id],
-    var.security_group_ids
+    var.security_group_ids,
   )
-  subnets            = var.subnets
+  subnets            = local.subnet_ids
 }
 
 ################################################################################
