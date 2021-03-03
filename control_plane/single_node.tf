@@ -32,21 +32,19 @@ resource "aws_instance" "single_node" {
       Cluster = var.cluster_name
       Role    = "control-plane"
     },
-    local.external_control_plane_address != "" ? { ExternalAddress = local.external_control_plane_address } : {},
-    local.internal_control_plane_address != "" ? { InternalAddress = local.internal_control_plane_address } : {}
+    {
+      for name, config in var.ingress:
+        "${title(name)}Address" =>  "control-plane--${var.cluster_name}.${local.region}.${config.dns_zone}" if contains(keys(config), "dns_zone")
+    }
   )
 }
 
-# Attaching the single node to our local ingress target groups
-resource "aws_lb_target_group_attachment" "single_node_internal" {
-  count            = !var.ha_enabled && local.internal_ingress_enabled ? 1 : 0
-  target_group_arn = aws_lb_target_group.internal[0].arn
-  target_id        = aws_instance.single_node[0].id
-}
-
-resource "aws_lb_target_group_attachment" "single_node_external" {
-  count            = !var.ha_enabled && local.external_ingress_enabled ? 1 : 0
-  target_group_arn = aws_lb_target_group.external[0].arn
+resource "aws_lb_target_group_attachment" "ingress" {
+  for_each = {
+    for name, config in var.ingress:
+      name => config if contains(keys(config), "load_balancer") && !var.ha_enabled
+  }
+  target_group_arn = aws_lb_target_group.ingress[each.key].arn
   target_id        = aws_instance.single_node[0].id
 }
 

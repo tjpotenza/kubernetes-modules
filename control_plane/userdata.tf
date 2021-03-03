@@ -25,7 +25,7 @@ data "template_file" "graceful_shutdown_service" {
 data "template_file" "graceful_shutdown_sh" {
   template = file("${path.module}/userdata/graceful-shutdown.sh")
   vars     = {
-    control_plane_address = local.internal_control_plane_address
+    control_plane_address = "localhost"
   }
 }
 

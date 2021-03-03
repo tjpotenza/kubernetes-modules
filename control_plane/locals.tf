@@ -1,19 +1,10 @@
 locals {
-  region = data.aws_region.current.name
+  region     = data.aws_region.current.name
+  vpc_id     = (var.vpc_id == null ? data.aws_vpc.main[0].id : var.vpc_id)
+  subnet_ids = (var.subnet_ids == null ? data.aws_subnet_ids.main[0].ids : var.subnet_ids)
 
-  external_dns_zone = lookup(var.external, "dns_zone", "")
-  internal_dns_zone = lookup(var.internal, "dns_zone", "")
-  external_ingress  = lookup(var.external, "ingress", {})
-  internal_ingress  = lookup(var.internal, "ingress", {})
-
-  external_control_plane_address = local.external_dns_zone != "" ? "control-plane--${var.cluster_name}.${local.region}.${local.external_dns_zone}" : ""
-  internal_control_plane_address = local.internal_dns_zone != "" ? "control-plane--${var.cluster_name}.${local.region}.${local.internal_dns_zone}" : ""
-
-  control_plane_sans = concat(
-    local.external_control_plane_address != "" ? [local.external_control_plane_address] : [],
-    local.internal_control_plane_address != "" ? [local.internal_control_plane_address] : [],
-  )
-
-  external_ingress_enabled = lookup(local.external_ingress, "enabled", false)
-  internal_ingress_enabled = lookup(local.internal_ingress, "enabled", false)
+  control_plane_sans = values({
+    for name, config in var.ingress:
+      name => "control-plane--${var.cluster_name}.${local.region}.${config.dns_zone}" if contains(keys(config), "dns_zone")
+  })
 }

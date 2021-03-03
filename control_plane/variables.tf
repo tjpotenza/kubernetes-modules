@@ -102,7 +102,18 @@ variable "internal" {
   default     = {}
 }
 
+variable "ingress" {
+  description = "Config for access to the cluster."
+  default     = {}
+}
+
 variable "root_block_device" {
   description = "Map of the values for configuring an instance's root block device.  Supported ptions are [ volume_type, volume_size, iops, delete_on_termination, encrypted ]."
   default     = {}
+}
+
+variable "control_plane_address" {
+  description = "Workers: An address the workers can use to reach their respective control plane."
+  type        = string
+  default     = null
 }

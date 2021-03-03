@@ -18,7 +18,7 @@ data "template_file" "graceful_shutdown_service" {
 data "template_file" "graceful_shutdown_sh" {
   template = file("${path.module}/userdata/graceful-shutdown.sh")
   vars     = {
-    control_plane_address = local.internal_control_plane_address
+    control_plane_address = var.control_plane_address
   }
 }
 
@@ -29,7 +29,7 @@ data "template_file" "bootstrap_sh" {
   template = file("${path.module}/userdata/bootstrap.sh")
   vars = {
     k3s_install_options       = local.k3s_install_options
-    control_plane_address     = base64encode(local.internal_control_plane_address)
+    control_plane_address     = base64encode(var.control_plane_address)
     graceful_shutdown_service = base64encode(data.template_file.graceful_shutdown_service.rendered)
     graceful_shutdown_sh      = base64encode(data.template_file.graceful_shutdown_sh.rendered)
   }

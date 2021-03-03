@@ -1,35 +1,20 @@
-resource "aws_lb_target_group" "external" {
-  count                = local.external_ingress_enabled ? 1 : 0
-  name                 = "ingress-cluster-external-${var.cluster_name}"
-  protocol             = "HTTP"
-  port                 = 80
-  vpc_id               = local.vpc_id
-  deregistration_delay = 60
-
-  tags = {
-    Name = "ingress-cluster-external-${var.cluster_name}"
-  }
-
-  health_check {
-    path = "/ping"
-    port = 80
-  }
-
-  lifecycle {
-    create_before_destroy = true
-  }
+resource "random_string" "target_group_nonce" {
+  length  = 4
+  upper   = false
+  special = false
 }
 
-resource "aws_lb_target_group" "internal" {
-  count                = local.internal_ingress_enabled ? 1 : 0
-  name                 = "ingress-cluster-internal-${var.cluster_name}"
+resource "aws_lb_target_group" "ingress" {
+  for_each             = var.ingress
+  name                 = "cluster-${var.cluster_name}-${each.key}-${random_string.target_group_nonce.result}"
   protocol             = "HTTP"
   port                 = 80
   vpc_id               = local.vpc_id
   deregistration_delay = 60
 
   tags = {
-    Name = "ingress-cluster-internal-${var.cluster_name}"
+    Name = "cluster-${var.cluster_name}-${each.key}"
+    name = "cluster-${var.cluster_name}-${each.key}"
   }
 
   health_check {
@@ -39,5 +24,6 @@ resource "aws_lb_target_group" "internal" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes        = [name]
   }
 }
