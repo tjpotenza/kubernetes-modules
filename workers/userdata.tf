@@ -1,7 +1,6 @@
 locals {
-  k3s_install_options = join(" ", [
-    var.k3s_version != "" ? "INSTALL_K3S_VERSION=${var.k3s_version}" : "INSTALL_K3S_CHANNEL=${var.k3s_channel}"
-  ])
+  k3s_install_options = lookup(var.k3s, "version", null) != null ? "INSTALL_K3S_VERSION=${var.k3s.version}" : ""
+  k3s_options         = join(" ", lookup(var.k3s, "options", []))
 }
 
 ####################################################################################################

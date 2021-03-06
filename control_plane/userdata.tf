@@ -1,7 +1,6 @@
 locals {
-  k3s_install_options = join(" ", [
-    var.k3s_version != "" ? "INSTALL_K3S_VERSION=${var.k3s_version}" : "INSTALL_K3S_CHANNEL=${var.k3s_channel}"
-  ])
+  k3s_install_options = lookup(var.k3s, "version", null) != null ? "INSTALL_K3S_VERSION=${var.k3s.version}" : ""
+  k3s_options         = join(" ", lookup(var.k3s, "options", []))
 }
 
 ####################################################################################################
@@ -36,6 +35,7 @@ data "template_file" "bootstrap_sh" {
   template = file("${path.module}/userdata/bootstrap.sh")
   vars = {
     k3s_install_options       = local.k3s_install_options
+    k3s_options               = base64encode(local.k3s_options)
     control_plane_sans        = base64encode( join(", ", local.control_plane_sans) )
     admin_yaml                = base64encode(data.template_file.admin_yaml.rendered)
     worker_bootstrapper_yaml  = base64encode(data.template_file.worker_bootstrapper_yaml.rendered)

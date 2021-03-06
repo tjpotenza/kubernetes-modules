@@ -68,16 +68,9 @@ variable "ami_regex" {
   type        = string
 }
 
-variable "k3s_channel" {
-  description = "Channel of K3S to install.  See official K3S docs for full list of valid values."
-  type        = string
-  default     = "stable"
-}
-
-variable "k3s_version" {
-  description = "Version of K3S to install.  If set, overrides the setting specified in var.k3s_channel."
-  type        = string
-  default     = ""
+variable "k3s" {
+  description = "Options for configuring the K3S install itself."
+  default     = {}
 }
 
 variable "instances" {

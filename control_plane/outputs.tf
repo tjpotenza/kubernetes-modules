@@ -9,3 +9,7 @@ output "control_plane_addresses" {
 output "target_group_arns" {
   value = { for k, v in aws_lb_target_group.ingress: k => v.arn }
 }
+
+output "single_node_id" {
+  value = var.ha_enabled ? null : aws_instance.single_node[0].id
+}
