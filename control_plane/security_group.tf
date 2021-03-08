@@ -11,6 +11,14 @@ resource "aws_security_group" "cluster_member" {
   }
 
   ingress {
+    description = "Etcd"
+    from_port   = 2379
+    to_port     = 2380
+    protocol    = "tcp"
+    self        = true
+  }
+
+  ingress {
     description = "Flannel VXLAN"
     from_port   = 8472
     to_port     = 8472
