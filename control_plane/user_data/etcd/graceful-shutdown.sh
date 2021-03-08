@@ -8,10 +8,10 @@ function fatal() { echo "[ERR] $1" >&2; exit 1; }
 
 log "Looking up current instance's member ID..."
 member_id=$(
-    etcdctl --endpoints="http://localhost:2379" member list -wsimple \
+    /usr/local/bin/etcdctl --endpoints="http://localhost:2379" member list -wsimple \
     | grep "$(hostname)," \
     | sed -E "s/,.*//"
 )
 
 log "Gracefully removing self (member_id: [$member_id]) from cluster..."
-etcdctl --endpoints="http://localhost:2379" member remove "$member_id"
+/usr/local/bin/etcdctl --endpoints="http://localhost:2379" member remove "$member_id"

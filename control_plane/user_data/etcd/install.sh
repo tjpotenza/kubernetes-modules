@@ -29,6 +29,6 @@ tar xzvf \
     "$etcd_download_dir/etcd-$etcd_version-linux-amd64.tar.gz" \
     -C "$etcd_download_dir" --strip-components=1
 
-mv "$etcd_download_dir/etcd" "/usr/bin/"
-mv "$etcd_download_dir/etcdctl" "/usr/bin/"
+mv "$etcd_download_dir/etcd" "/usr/local/bin/"
+mv "$etcd_download_dir/etcdctl" "/usr/local/bin/"
 rm -rf "$etcd_download_dir"

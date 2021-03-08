@@ -5,7 +5,7 @@ After=${kubernetes_unit}.service
 [Service]
 Type=oneshot
 RemainAfterExit=true
-ExecStop=/usr/local/bin/graceful-shutdown.sh
+ExecStop=/usr/local/lib/k3s/graceful-shutdown.sh
 TimeoutStopSec=600
 
 [Install]

@@ -3,7 +3,7 @@ resource "aws_launch_template" "workers" {
   image_id               = data.aws_ami.ami.id
   instance_type          = var.instance_type
   key_name               = var.key_name
-  user_data              = base64encode(data.template_file.bootstrap_sh.rendered)
+  user_data              = data.template_cloudinit_config.user_data.rendered
   vpc_security_group_ids = concat(
     values(data.aws_security_group.instance).*.id,
     var.security_group_ids
