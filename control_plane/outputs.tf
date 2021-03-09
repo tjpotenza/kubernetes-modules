@@ -11,5 +11,9 @@ output "target_group_arns" {
 }
 
 output "single_node_id" {
-  value = var.ha_enabled ? null : aws_instance.single_node[0].id
+  value = ""
+}
+
+output "iam_instance_profile_arn" {
+  value = aws_iam_instance_profile.control_plane.arn
 }

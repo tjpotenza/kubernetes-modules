@@ -1,9 +1,3 @@
-variable "ha_enabled" {
-  description = "Control Plane: Whether the control plane is using an HA-compatible data store.  Runs as a single node using internal storage if false."
-  type        = bool
-  default     = false
-}
-
 variable "vpc_id" {
   description = "ID for the VPC within which resources will be created."
   type        = string
@@ -107,6 +101,12 @@ variable "root_block_device" {
 
 variable "control_plane_address" {
   description = "Workers: An address the workers can use to reach their respective control plane."
+  type        = string
+  default     = null
+}
+
+variable "iam_instance_profile_arn" {
+  description = "Workers: ARN for an IAM Instance Profile to associate with instances."
   type        = string
   default     = null
 }

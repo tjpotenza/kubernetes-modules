@@ -9,6 +9,10 @@ resource "aws_launch_template" "workers" {
     var.security_group_ids
   )
 
+  iam_instance_profile {
+    arn = var.iam_instance_profile_arn
+  }
+
   dynamic "block_device_mappings" {
     # Only create this block if any values are set within var.root_block_device
     for_each = var.root_block_device != {} ? { enabled = true } : {}

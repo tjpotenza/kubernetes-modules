@@ -53,12 +53,13 @@ fi
 ####################################################################################################
 
 # General model:
-# - A cluster exists, and I'm not a member
-# - A cluster exists, and I'm a member
-# - No cluster exists, but I can start one
-# - No cluster exists, and I can't start one
+# 1. A cluster exists, and I'm not a member
+# 2. A cluster exists, and I'm a member
+# 3. No cluster exists, but I can start one
+# 4. No cluster exists, and I can't start one
 #
-# All four scenarios
+# Scenarios 2, 3, and 4 all can be started with the same arguments for etcd.  There's a few extra
+# settings needed for scenario one, since it involves registering with the cluster and two steps.
 
 if [[ "$cluster_to_join" != "" && "$is_former_member" == "false" ]]; then
     log "Found a running etcd server on an instance with similar tags to which this instance is not registered.  Attempting to join it..."

@@ -2,6 +2,12 @@ locals {
   k3s_install_options = lookup(var.k3s, "version", null) != null ? "INSTALL_K3S_VERSION=${var.k3s.version}" : ""
   k3s_options         = join(" ", lookup(var.k3s, "options", []))
 
+  k3s_discover_control_plane_sh = base64encode(
+    templatefile("${path.module}/user_data/k3s/discover-control-plane.sh", {
+      cluster = var.cluster_name
+    })
+  )
+
   k3s_graceful_shutdown_service = base64encode(
     templatefile("${path.module}/user_data/k3s/graceful-shutdown.service", {
       kubernetes_unit = "k3s-agent"
@@ -17,7 +23,8 @@ locals {
   k3s_install_sh = base64encode(
     templatefile("${path.module}/user_data/k3s/install.sh", {
       k3s_install_options   = local.k3s_install_options
-      control_plane_address = var.control_plane_address
+      k3s_options           = local.k3s_options
+      control_plane_address = base64encode(var.control_plane_address)
     })
   )
 }
@@ -41,6 +48,11 @@ data "template_cloudinit_config" "user_data" {
         permissions: "0755"
         encoding:    "b64"
         content:     "${local.k3s_install_sh}"
+      - path:        "/usr/local/lib/k3s/discover-control-plane.sh"
+        owner:       "root:root"
+        permissions: "0755"
+        encoding:    "b64"
+        content:     "${local.k3s_discover_control_plane_sh}"
       - path:        "/usr/local/lib/k3s/graceful-shutdown.sh"
         owner:       "root:root"
         permissions: "0755"

@@ -1,10 +1,23 @@
-resource "aws_instance" "single_node" {
-  count                  = var.ha_enabled ? 0 : 1
+# Since it's kinda tough to auto-pick subnet groups in a way that's both intuitive *and* won't heavily favor
+# the same exact distribution in different projects, we just sort the list and generate a random offset
+# at which to start iterating.  Technically we'll still trend toward groups of the same lexicographically
+# sequential sets of subnets across projects, but that's good enough for my use cases (for now).
+resource "random_integer" "subnet_offset" {
+  min = 0
+  max = 255
+}
+
+resource "aws_instance" "instances" {
+  count                  = var.instances
   ami                    = data.aws_ami.ami.id
   instance_type          = var.instance_type
   key_name               = var.key_name
   user_data_base64       = data.template_cloudinit_config.user_data.rendered
-  subnet_id              = length(local.subnet_ids) == 1 ? local.subnet_ids[0] : null
+  iam_instance_profile   = aws_iam_instance_profile.control_plane.id
+  subnet_id              = (
+    length(local.subnet_ids) == 0 ? null :
+      element(local.subnet_ids, random_integer.subnet_offset.result + count.index)
+  )
   vpc_security_group_ids = concat(
     values(data.aws_security_group.instance).*.id,
     var.security_group_ids,
@@ -37,20 +50,4 @@ resource "aws_instance" "single_node" {
         "${title(name)}Address" =>  "control-plane--${var.cluster_name}.${local.region}.${config.dns_zone}" if contains(keys(config), "dns_zone")
     }
   )
-}
-
-resource "aws_lb_target_group_attachment" "ingress" {
-  for_each = {
-    for name, config in var.ingress:
-      name => config if contains(keys(config), "load_balancer") && !var.ha_enabled
-  }
-  target_group_arn = aws_lb_target_group.ingress[each.key].arn
-  target_id        = aws_instance.single_node[0].id
-}
-
-# Attaching the single node to any shared ingress target groups
-resource "aws_lb_target_group_attachment" "single_node_shared" {
-  for_each          = !var.ha_enabled ? var.target_group_arns : {}
-  target_group_arn  = each.value
-  target_id         = aws_instance.single_node[0].id
 }
