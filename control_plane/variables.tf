@@ -99,12 +99,6 @@ variable "root_block_device" {
   default     = {}
 }
 
-variable "control_plane_address" {
-  description = "Workers: An address the workers can use to reach their respective control plane."
-  type        = string
-  default     = null
-}
-
 variable "iam_instance_profile_arn" {
   description = "Workers: ARN for an IAM Instance Profile to associate with instances."
   type        = string
