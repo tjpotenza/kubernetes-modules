@@ -30,8 +30,8 @@ locals {
   k3s_admin_yaml = base64encode(
     templatefile("${path.module}/user_data/k3s/admin.yaml", {})
   )
-  k3s_worker_bootstrapper_yaml = base64encode(
-    templatefile("${path.module}/user_data/k3s/worker-bootstrapper.yaml", {})
+  k3s_node_bootstrapper_yaml = base64encode(
+    templatefile("${path.module}/user_data/k3s/node-bootstrapper.yaml", {})
   )
 
   k3s_graceful_shutdown_service = base64encode(
@@ -126,11 +126,11 @@ data "template_cloudinit_config" "user_data" {
         permissions: "0600"
         encoding:    "b64"
         content:     "${local.k3s_admin_yaml}"
-      - path:        "/var/lib/rancher/k3s/server/manifests/worker-bootstrapper.yaml"
+      - path:        "/var/lib/rancher/k3s/server/manifests/node-bootstrapper.yaml"
         owner:       "root:root"
         permissions: "0600"
         encoding:    "b64"
-        content:     "${local.k3s_worker_bootstrapper_yaml}"
+        content:     "${local.k3s_node_bootstrapper_yaml}"
       runcmd:
       - "/usr/local/lib/k3s/install.sh"
       - "sudo systemctl daemon-reload"

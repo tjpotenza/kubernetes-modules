@@ -1,5 +1,18 @@
-resource "aws_launch_template" "control_plane" {
-  name_prefix            = "${var.cluster_name}-control-plane"
+resource "random_string" "group_nonce" {
+  length  = 6
+  upper   = false
+  special = false
+  keepers = {
+    cluster_name = var.cluster_name
+  }
+}
+
+locals {
+  group_name = "${ substr("${var.cluster_name}-${local.role_name}", 0, 25) }-${ random_string.group_nonce.result }"
+}
+
+resource "aws_launch_template" "instances" {
+  name_prefix            = local.group_name
   image_id               = data.aws_ami.ami.id
   instance_type          = var.instance_type
   key_name               = var.key_name
@@ -38,8 +51,8 @@ resource "aws_launch_template" "control_plane" {
   }
 }
 
-resource "aws_autoscaling_group" "control_plane" {
-  name                = "${var.cluster_name}-control-plane"
+resource "aws_autoscaling_group" "instances" {
+  name                = local.group_name
   vpc_zone_identifier = local.subnet_ids
   desired_capacity    = var.instances
   max_size            = var.instances
@@ -47,13 +60,13 @@ resource "aws_autoscaling_group" "control_plane" {
   target_group_arns   = var.target_group_arns
 
   launch_template {
-    id      = aws_launch_template.control_plane.id
+    id      = aws_launch_template.instances.id
     version = "$Latest"
   }
 
   tag {
     key   = "Name"
-    value = "${var.cluster_name}-control-plane"
+    value = local.group_name
     propagate_at_launch = true
   }
 
@@ -65,7 +78,7 @@ resource "aws_autoscaling_group" "control_plane" {
 
   tag {
     key   = "Role"
-    value = "control-plane"
+    value = local.role_name
     propagate_at_launch = true
   }
 }

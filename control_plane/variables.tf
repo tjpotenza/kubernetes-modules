@@ -97,7 +97,7 @@ variable "root_block_device" {
 }
 
 variable "instance_profile_arn" {
-  description = "Workers: ARN for an IAM Instance Profile to associate with instances."
+  description = "ARN for an IAM Instance Profile to associate with instances."
   type        = string
   default     = null
 }

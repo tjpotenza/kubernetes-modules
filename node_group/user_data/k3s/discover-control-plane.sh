@@ -7,7 +7,7 @@ function err()   { echo "[ERR] $1" >&2; }
 function fatal() { echo "[ERR] $1" >&2; exit 1; }
 
 cluster="${cluster}"
-role="control-plane"
+role_to_discover="control-plane"
 control_plane_address="control-plane.cluster.local"
 
 log "Looking up a control-plane instance ip..."
@@ -18,7 +18,7 @@ control_plane_instance_ip=$(
         --output="json" \
         --filters \
             "Name=tag:Cluster,Values=$cluster" \
-            "Name=tag:Role,Values=$role" \
+            "Name=tag:Role,Values=$role_to_discover" \
             "Name=instance-state-name,Values=running" \
     | jq ".Reservations[].Instances[].PrivateIpAddress" -rec | sort -R | head -n1
 )

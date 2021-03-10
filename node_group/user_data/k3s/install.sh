@@ -11,7 +11,7 @@ sudo yum update -y
 sudo yum install -y jq
 
 ####################################################################################################
-# Worker: Frontloading Terraform template values and EC2 metadata values into bash vars
+# Node: Frontloading Terraform template values and EC2 metadata values into bash vars
 ####################################################################################################
 control_plane_address="control-plane.cluster.local"
 cluster_api_endpoint="https://$control_plane_address:6443"
@@ -22,7 +22,7 @@ public_ip=$(         curl -sSLf http://169.254.169.254/latest/meta-data/public-i
 availability_zone=$( curl -sSLf http://169.254.169.254/latest/meta-data/placement/availability-zone )
 
 ####################################################################################################
-# Worker: Installing Kubernetes itself
+# Node: Installing Kubernetes itself
 ####################################################################################################
 log "Attempting to pull bootstrapping metadata from control plane..."
 attempts="10"

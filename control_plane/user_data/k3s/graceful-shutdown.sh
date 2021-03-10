@@ -9,7 +9,7 @@ function fatal() { echo "[ERR] $1" >&2; exit 1; }
 log "Retrieving kubectl credentials from control-plane..."
 token=$(curl -sSLf "localhost:30000/token")
 ca_crt=$(curl -sSLf "localhost:30000/ca.crt" | base64 -w0)
-control_plane_address="https://control-plane.cluster.local:6443"
+control_plane_address="https://${control_plane_address}:6443"
 
 kubeconfig="
 ---
