@@ -1,6 +1,6 @@
 output "target_group_arns" {
   value = concat(
-    values(aws_lb_target_group.ingress).*.arn,
+    values(aws_lb_target_group.cluster_target_groups).*.arn,
     values(data.aws_lb_target_group.from_names).*.arn,
     var.target_group_arns,
   )
@@ -16,4 +16,8 @@ output "security_group_ids" {
     values(data.aws_security_group.from_names).*.id,
     var.security_group_ids,
   )
+}
+
+output "cluster_target_groups" {
+  value = aws_lb_target_group.cluster_target_groups
 }

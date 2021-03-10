@@ -10,7 +10,7 @@
 # This compromises and settles on "ugly but somewhat significant and definitely unique names".  (We truncate
 # before adding the nonce suffix so a cluster with a long name can't displace the unique value entirely.)
 resource "random_string" "target_group_nonce" {
-  for_each = var.ingress
+  for_each = var.cluster_target_groups
   length  = 6
   upper   = false
   special = false
@@ -19,8 +19,8 @@ resource "random_string" "target_group_nonce" {
   }
 }
 
-resource "aws_lb_target_group" "ingress" {
-  for_each             = var.ingress
+resource "aws_lb_target_group" "cluster_target_groups" {
+  for_each             = var.cluster_target_groups
   name                 = "${ substr("${var.cluster_name}-${each.key}", 0, 25) }-${ random_string.target_group_nonce[each.key].result }"
   protocol             = "HTTP"
   port                 = 80

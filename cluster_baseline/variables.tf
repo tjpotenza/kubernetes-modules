@@ -51,7 +51,7 @@ variable "cluster_name" {
   type        = string
 }
 
-variable "ingress" {
-  description = "Map of load balancer associations."
+variable "cluster_target_groups" {
+  description = "A map of target groups to create for this cluster, where a target group will be created for each key."
   default     = {}
 }

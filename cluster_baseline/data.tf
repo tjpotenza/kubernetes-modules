@@ -28,20 +28,20 @@ data "aws_lb_target_group" "from_names" {
   name     = each.value
 }
 
-data "aws_lb" "ingress" {
+data "aws_lb" "cluster_target_groups" {
   for_each = {
-    for name, config in var.ingress:
-      name => config if contains(keys(config), "load_balancer")
+    for name, config in var.cluster_target_groups:
+      name => config if contains(keys(config), "lb_listener_rule")
   }
-  arn      = lookup(each.value.load_balancer, "arn", null)
-  name     = lookup(each.value.load_balancer, "name", null)
+  arn      = lookup(each.value.lb_listener_rule, "lb_arn", null)
+  name     = lookup(each.value.lb_listener_rule, "lb_name", null)
 }
 
-data "aws_lb_listener" "ingress" {
+data "aws_lb_listener" "cluster_target_groups" {
   for_each          = {
-    for name, config in var.ingress:
-      name => config if contains(keys(config), "load_balancer")
+    for name, config in var.cluster_target_groups:
+      name => config if contains(keys(config), "lb_listener_rule")
   }
-  load_balancer_arn = data.aws_lb.ingress[each.key].arn
-  port              = lookup(each.value.load_balancer, "alb_port", 443)
+  load_balancer_arn = data.aws_lb.cluster_target_groups[each.key].arn
+  port              = lookup(each.value.lb_listener_rule, "lb_port", 443)
 }
