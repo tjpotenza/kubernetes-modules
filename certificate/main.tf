@@ -23,7 +23,7 @@ resource "aws_route53_record" "certificate_validation_records" {
       zone_id = lookup(
         var.validation_zone_id_overrides,
         dvo.domain_name,
-        var.validation_zone_id
+        local.validation_zone_id
       )
     }
   }
