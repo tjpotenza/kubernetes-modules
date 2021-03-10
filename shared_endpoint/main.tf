@@ -16,7 +16,7 @@ resource "aws_route53_record" "shared_endpoint" {
   }
 }
 
-resource "aws_lb_target_group" "shared" {
+resource "aws_lb_target_group" "shared_endpoint" {
   count                = local.shared_target_group_enabled ? 1 : 0
   vpc_id               = local.vpc_id
   protocol             = local.shared_target_group_protocol
@@ -47,7 +47,8 @@ resource "aws_lb_listener_rule" "shared_endpoint" {
 
   # This dynamic mess is a consequences of a bug / quirk with aws_lb_listener_rule resource.  It will
   # not allow an action { forward { ... } } block to have only one target_group {} blocks, so we need
-  # a special case for when there's only one target_group associated versus when there are many.
+  # a special case to use target_group_arn when there's only one target_group associated and the full
+  # target_group {} syntax when there are many.
   dynamic "action" {
     for_each = length(local.target_group_arns) == 1 ? local.target_group_arns : {}
     content {

@@ -10,6 +10,6 @@ locals {
 
   target_group_arns = merge(
     var.target_group_arns,
-    local.shared_target_group_enabled ? { shared = aws_lb_target_group.shared[0].arn } : {}
+    local.shared_target_group_enabled ? { shared = aws_lb_target_group.shared_endpoint[0].arn } : {}
   )
 }

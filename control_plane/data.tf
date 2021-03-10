@@ -24,7 +24,7 @@ data "aws_ami" "ami" {
   most_recent = true
 }
 
-data "aws_security_group" "instance" {
+data "aws_security_group" "from_names" {
   for_each = toset(var.security_group_names)
   name     = each.value
 }

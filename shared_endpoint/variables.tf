@@ -1,17 +1,17 @@
 variable "vpc_id" {
-  description = "ID for the VPC within which resources will be created."
+  description = "(Optional) The ID for the VPC within which resources will be created."
   type        = string
   default     = null
 }
 
 variable "vpc_tags" {
-  description = "Tags to target when looking up the VPC within which resources will be created.  Not used if vpc_id is set."
+  description = "(Optional) A map of tags to target when looking up the VPC within which resources will be created.  Not used if vpc_id is set."
   type        = map
   default     = null
 }
 
 variable "dns_zone" {
-  description = "(Optional) Name for the DNS zone within which service records should be created.  Required unless dns_record_enabled == false."
+  description = "(Optional) A name for the DNS zone within which service records should be created.  Required unless dns_record_enabled == false."
   type        = string
 }
 
@@ -22,24 +22,24 @@ variable "is_dns_zone_internal" {
 }
 
 variable "name" {
-  description = "(Required) Name of the service for which this module routes."
+  description = "(Required) The name of the service for which this module routes."
   type        = string
 }
 
 variable "alb_arn" {
-  description = "(Optional) ARN of the ALB the Route53 Records will point to, and for which the rules will be created.  Required if alb_name is not set."
+  description = "(Optional) The ARN of the ALB the Route53 Records will point to, and for which the rules will be created.  Required if alb_name is not set."
   type        = string
   default     = null
 }
 
 variable "alb_name" {
-  description = "(Optional) Unique name of the ALB the Route53 Records will point to, and for which the rules will be created.  Required if alb_arn is not set."
+  description = "(Optional) A unique name of the ALB the Route53 Records will point to, and for which the rules will be created.  Required if alb_arn is not set."
   type        = string
   default     = null
 }
 
 variable "alb_port" {
-  description = "(Optional) Port of the ALB Listener for which the service's rules should be associated."
+  description = "(Optional) The port of the ALB Listener for which the service's rules should be associated."
   type        = number
   default     = 443
 }
@@ -51,37 +51,37 @@ variable "dns_record_enabled" {
 }
 
 variable "target_port" {
-  description = "(Optional) Port on the instances to which traffic and healthchecks should be routed."
+  description = "(Optional) The port on the instances to which traffic and healthchecks should be routed."
   type        = number
   default     = 80
 }
 
 variable "healthcheck_path" {
-  description = "(Optional) Path of the healthcheck to determine whether instance is routable."
+  description = "(Optional) The path of the healthcheck to determine whether instance is routable."
   type        = string
   default     = "/ping"
 }
 
 variable "target_group_arns" {
-  description = "(Optional) Map of cluster names that should be routable for this service, and the ARN of their ingress target group."
+  description = "(Optional) A map of cluster names that should be routable for this service, and the ARN of their ingress target group."
   type        = map(string)
   default     = {}
 }
 
 variable "weights" {
-  description = "(Optional) Map of cluster names if they should have special weighting applied.  Any clusters not included in this map will receive a weight of 1."
+  description = "(Optional) A map of cluster names if they should have special weighting applied.  Any clusters not included in this map will receive a weight of 1."
   type        = map(number)
   default     = {}
 }
 
 variable "restricted_cidrs" {
-  description = "List of CIDRs that should be permitted to access 'restricted' hostnames and services on the cluster.  No source IP restrictions will be created if empty."
+  description = "(Optional) If not empty, the ALB will set a source_ip condition to restrict access to only this list of CIDRs.  No source IP restrictions will be created if empty.  ALBs only allow a small handful of conditions, so this should only be used with 3-4 CIDRs; for any more create a new ALB and restrict access at the security group level."
   type        = list
   default     = []
 }
 
 variable "stickiness_enabled" {
-  description = "(Optional) Indicates whether target group stickiness is enabled."
+  description = "(Optional) Whether target group stickiness is enabled."
   type        = bool
   default     = false
 }

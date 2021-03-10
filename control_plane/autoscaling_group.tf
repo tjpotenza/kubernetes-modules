@@ -18,7 +18,7 @@ resource "aws_launch_template" "instances" {
   key_name               = var.key_name
   user_data              = data.template_cloudinit_config.user_data.rendered
   vpc_security_group_ids = concat(
-    values(data.aws_security_group.instance).*.id,
+    values(data.aws_security_group.from_names).*.id,
     var.security_group_ids,
   )
 
