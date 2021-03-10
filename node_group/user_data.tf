@@ -1,3 +1,6 @@
+################################################################################
+# Rendering files for k3s (node)
+################################################################################
 locals {
   k3s_install_options = lookup(var.k3s, "version", null) != null ? "INSTALL_K3S_VERSION=${var.k3s.version}" : ""
   k3s_options         = join(" ", lookup(var.k3s, "options", []))
@@ -28,6 +31,9 @@ locals {
   )
 }
 
+################################################################################
+# Compiling everything into the cloud-init config itself
+################################################################################
 data "template_cloudinit_config" "user_data" {
   gzip          = true
   base64_encode = true

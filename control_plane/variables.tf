@@ -87,7 +87,12 @@ variable "ami_regex" {
 }
 
 variable "k3s" {
-  description = "Options for configuring the K3S install itself."
+  description = "Options for configuring installation of k3s itself."
+  default     = {}
+}
+
+variable "etcd" {
+  description = "Options for configuring the installation of etcd itself."
   default     = {}
 }
 

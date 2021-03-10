@@ -1,4 +1,9 @@
+################################################################################
+# Rendering files for etcd
+################################################################################
 locals {
+  etcd_version = lookup(var.etcd, "version", "v3.4.15")
+
   etcd_sh = base64encode(templatefile(
     "${path.module}/user_data/etcd/etcd.sh", {
       cluster = var.cluster_name
@@ -8,7 +13,7 @@ locals {
 
   etcd_install_sh = base64encode(
     templatefile("${path.module}/user_data/etcd/install.sh", {
-      etcd_version = "v3.4.15"
+      etcd_version = local.etcd_version
     })
   )
 
@@ -23,6 +28,9 @@ locals {
   )
 }
 
+################################################################################
+# Rendering files for k3s (control plane)
+################################################################################
 locals {
   k3s_install_options = lookup(var.k3s, "version", null) != null ? "INSTALL_K3S_VERSION=${var.k3s.version}" : ""
   k3s_options         = join(" ", lookup(var.k3s, "options", []))
@@ -55,6 +63,9 @@ locals {
   )
 }
 
+################################################################################
+# Compiling everything into the cloud-init config itself
+################################################################################
 data "template_cloudinit_config" "user_data" {
   gzip          = true
   base64_encode = true
