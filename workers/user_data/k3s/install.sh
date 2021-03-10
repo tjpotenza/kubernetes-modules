@@ -13,7 +13,6 @@ sudo yum install -y jq
 ####################################################################################################
 # Worker: Frontloading Terraform template values and EC2 metadata values into bash vars
 ####################################################################################################
-# control_plane_address=$( echo "${control_plane_address}" | base64 -d )
 control_plane_address="control-plane.cluster.local"
 cluster_api_endpoint="https://$control_plane_address:6443"
 node_token=""

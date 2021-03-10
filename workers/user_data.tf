@@ -15,16 +15,13 @@ locals {
   )
 
   k3s_graceful_shutdown_sh = base64encode(
-    templatefile("${path.module}/user_data/k3s/graceful-shutdown.sh", {
-      control_plane_address = "localhost"
-    })
+    templatefile("${path.module}/user_data/k3s/graceful-shutdown.sh", {})
   )
 
   k3s_install_sh = base64encode(
     templatefile("${path.module}/user_data/k3s/install.sh", {
       k3s_install_options   = local.k3s_install_options
       k3s_options           = local.k3s_options
-      control_plane_address = base64encode(var.control_plane_address)
     })
   )
 }

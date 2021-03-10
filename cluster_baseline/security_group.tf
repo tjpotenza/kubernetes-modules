@@ -1,5 +1,5 @@
 resource "aws_security_group" "cluster_member" {
-  name        = "${var.cluster_name}-instance-sg"
+  name        = "${var.cluster_name}-cluster-member"
   vpc_id      = local.vpc_id
 
   ingress {

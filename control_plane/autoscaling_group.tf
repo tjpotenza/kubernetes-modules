@@ -7,11 +7,10 @@ resource "aws_launch_template" "control_plane" {
   vpc_security_group_ids = concat(
     values(data.aws_security_group.instance).*.id,
     var.security_group_ids,
-    [ aws_security_group.cluster_member.id ],
   )
 
   iam_instance_profile {
-    arn = aws_iam_instance_profile.control_plane.arn
+    arn = var.instance_profile_arn
   }
 
   dynamic "block_device_mappings" {
@@ -45,10 +44,7 @@ resource "aws_autoscaling_group" "control_plane" {
   desired_capacity    = var.instances
   max_size            = var.instances
   min_size            = var.instances
-  target_group_arns   = concat(
-    values(var.target_group_arns),
-    values(aws_lb_target_group.ingress)[*].arn
-  )
+  target_group_arns   = var.target_group_arns
 
   launch_template {
     id      = aws_launch_template.control_plane.id

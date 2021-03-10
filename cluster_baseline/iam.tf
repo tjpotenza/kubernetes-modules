@@ -1,5 +1,5 @@
-resource "aws_iam_role" "control_plane" {
-  name = "${var.cluster_name}-control-plane"
+resource "aws_iam_role" "cluster_member" {
+  name = "${var.cluster_name}-cluster-member"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -16,12 +16,11 @@ resource "aws_iam_role" "control_plane" {
 
   tags = {
     Cluster = var.cluster_name
-    Role    = "control-plane"
   }
 }
 
-resource "aws_iam_policy" "control_plane" {
-  name   = "${var.cluster_name}-control-plane"
+resource "aws_iam_policy" "cluster_member" {
+  name   = "${var.cluster_name}-cluster-member"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -36,13 +35,13 @@ resource "aws_iam_policy" "control_plane" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "control_plane" {
-  role       = aws_iam_role.control_plane.name
-  policy_arn = aws_iam_policy.control_plane.arn
+resource "aws_iam_role_policy_attachment" "cluster_member" {
+  role       = aws_iam_role.cluster_member.name
+  policy_arn = aws_iam_policy.cluster_member.arn
 }
 
 
-resource "aws_iam_instance_profile" "control_plane" {
-  name = "${var.cluster_name}-control-plane"
-  role = aws_iam_role.control_plane.name
+resource "aws_iam_instance_profile" "cluster_member" {
+  name = "${var.cluster_name}-cluster-member"
+  role = aws_iam_role.cluster_member.name
 }

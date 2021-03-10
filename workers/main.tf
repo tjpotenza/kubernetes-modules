@@ -10,7 +10,7 @@ resource "aws_launch_template" "workers" {
   )
 
   iam_instance_profile {
-    arn = var.iam_instance_profile_arn
+    arn = var.instance_profile_arn
   }
 
   dynamic "block_device_mappings" {
@@ -44,7 +44,7 @@ resource "aws_autoscaling_group" "workers" {
   desired_capacity    = var.instances
   max_size            = var.instances
   min_size            = var.instances
-  target_group_arns   = values(var.target_group_arns)
+  target_group_arns   = var.target_group_arns
 
   launch_template {
     id      = aws_launch_template.workers.id
