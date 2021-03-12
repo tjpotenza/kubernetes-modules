@@ -9,8 +9,7 @@ To provide a platform for several of my hobby projects, while also being one of 
 ## Design Principles
 * For every module that depends on external resources, those resources can **either** be looked up with human-readable values or passed in explicitly by ID.  Resources being created in well known or stable environments (ie cluster in long-lived VPCs, or `node_groups` for long-lived clusters) should be able to leverage convenient lookups, while projects that create entire clusters should be able to string the outputs and inputs together in a way that allows Terraform to properly order and relate the components to each other.
 * Clusters deployed with these modules independent from any external orchestration dependencies, such as Jenkins or Vault; all bootstrapping required for general use of a cluster should be environment agnostic and managed using tooling included within the cluster and native cloud-provider utilities, such as tag lookups.
-* These modules should be "pure" and best-practice-y Terraform modules, and shouldn't require any weird commands or `-target`ing.  A `terraform apply` should be all it takes to fully deploy one of these clusters from any state, even from a cold start.  (Recycling instances in an `ASG` after changing a `Launch Template` is the one exception here; I'm still deciding what approach is the most "in the spirit" of this project, be that `palantir/bouncer`, something more home-grown, or nothing at all)
-
+* There shouldn't be any out-of-band configuration steps required, or `-target`ing for first-time deployment; a `terraform apply` should be all it takes to fully update or deploy one of these clusters from any state, even from a cold start.  (Recycling instances in an `ASG` after changing a `Launch Template` is the one exception here; I'm still deciding what approach is the most "in the spirit" of this project, be that implementing something like `palantir/bouncer`, something more home-grown, or nothing at all)
 
 ## Noteable Characteristics & Common Patterns Implemented (So Far)
 * Control Planes instances are "stacked", running both the Kubernetes Control Plane and `etcd`.
@@ -41,6 +40,7 @@ Dependent resources discussed within that are not currently managed by modules i
 * Any DNS Zones themselves.
 * A Route53 alias record of format `*.{region}.{dns_zone}` pointed to the Shared ALB(s), if using the automatic ingress setup.
 
+To offer a rough diagram of the core resources managed by these modules and how they interact in a simple single-cluster deployment:
 ```
                                                                                                                                     ┌───────────────────────────────────┐
                                                                                                                                     │ control_plane                     │
