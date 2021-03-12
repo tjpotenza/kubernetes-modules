@@ -29,7 +29,7 @@ There are two types of module in this repo: several that directly correspond to 
 Kubernetes-specific modules:
 * The [`cluster_baseline`](./cluster_baseline) module creates most of the auxiliary resources for a cluster, such as target groups, IAM roles, security groups, and ALB listener rules.
 * The [`control_plane`](./control_plane) module creates a group of control plane instances.  Many different control plane instance groups can be associated with the same cluster.
-* The [`node_group`](./node_group) module creates a group of nodes for running the majority of the workload.  Many different control plane instance groups can be associated with the same cluster.
+* The [`node_group`](./node_group) module creates a group of nodes for running the majority of the workload.  Many different node instance groups can be associated with the same cluster.
 * The [`shared_endpoint`](./shared_endpoint) module creates a DNS record and ALB Listener Rule for a service that can route requests across one or more clusters.
 
 Quality-of-Life modules:

@@ -1,17 +1,17 @@
-# `shared_endpoint`
+# Module: `shared_endpoint`
 
 ---
 
-Creates a DNS record and ALB Listener Rule for a service that can route requests across one or more clusters.
+Creates a DNS record and ALB Listener Rule for a service that can route requests across one or more clusters.  Records are created with latency-based routing by default, allowing support for services deployed across multiple regions.  Can accept and attach to a set of existing `Target Groups` or create a service-specific `Target Group` that can be attached to clusters.
 
 ## Example
 
 ```terraform
-module "nginx_use1" {
+module "blog_use1" {
   source            = "../kubernetes-modules/shared_endpoint"
   vpc_tags          = { name = "default" }
   alb_name          = "shared-external-alb"
-  name              = "nginx"
+  name              = "blog"
   dns_zone          = "example.com"
   target_group_arns = {
     apollo = module.apollo.cluster_target_groups["external"].arn
@@ -19,7 +19,7 @@ module "nginx_use1" {
 }
 ```
 
-## Variables
+## Variable Reference
 | Name | Description | Type | Default |
 |------|-------------|------|---------|
 | `vpc_id` | (Optional) The ID for the VPC within which resources will be created. | `string` | `null` |
@@ -41,12 +41,12 @@ module "nginx_use1" {
 | `stickiness_duration` | (Optional) The time period, in seconds, during which requests from a client should be routed to the same target group. The range is 1-604800 seconds (7 days). | `number` | `30` |
 | `shared_target_group` | (Optional) Whether to enable the creation of a shared Target Group, and settings to assign it.  See locals.tf for options and defaults. | `map` | `{}` |
 
-## Outputs
+## Output Reference
 | Name | Description |
 |------|-------------|
 | `shared_target_group_arn` | ARN of the shared target group, if one was created. |
 
-## Resources Used
+## Resources and Data Sources Used
 * [aws_lb](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb) (data)
 * [aws_lb_listener](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb_listener) (data)
 * [aws_lb_listener_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_rule) (resource)
@@ -55,3 +55,4 @@ module "nginx_use1" {
 * [aws_route53_record](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) (resource)
 * [aws_route53_zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) (data)
 * [aws_vpc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) (data)
+

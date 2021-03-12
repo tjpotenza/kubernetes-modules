@@ -1,5 +1,9 @@
+####################################################################################################
+# Common Variables
+####################################################################################################
+
 variable "vpc_id" {
-  description = "(Optional) ID for the VPC within which resources will be created."
+  description = "(Optional) The ID for the VPC within which resources will be created."
   type        = string
   default     = null
 }
@@ -51,6 +55,10 @@ variable "cluster_name" {
   type        = string
 }
 
+####################################################################################################
+# Control Plane & Node Group Variables
+####################################################################################################
+
 variable "instances" {
   description = "(Optional) The number of instances to be created in this group."
   type        = number
@@ -95,13 +103,17 @@ variable "k3s" {
   default     = {}
 }
 
+####################################################################################################
+# Control Plane Variables
+####################################################################################################
+
 variable "etcd" {
-  description = "(Optional) Control-Plane: Options for configuring the installation of etcd."
+  description = "(Optional) Options for configuring the installation of etcd."
   default     = {}
 }
 
 variable "control_plane_sans" {
-  description = "(Optional) Control-Plane: Additional Subject Alternative Name records to include in the API Server certificate."
+  description = "(Optional) Additional Subject Alternative Name records to include in the API Server certificate."
   type        = list
   default     = []
 }
