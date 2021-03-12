@@ -1,6 +1,6 @@
 resource "aws_route53_record" "shared_endpoint" {
   count          = var.dns_record_enabled ? 1 : 0
-  zone_id        = data.aws_route53_zone.dns_zone[0].zone_id
+  zone_id        = local.dns_zone_id
   name           = local.endpoint
   set_identifier = "${local.endpoint} - ${local.region}"
   type           = "A"
@@ -58,7 +58,7 @@ resource "aws_lb_listener_rule" "shared_endpoint" {
   }
 
   dynamic "action" {
-    for_each = length(local.target_group_arns) > 1 ? { exists = true } : {}
+    for_each = length(local.target_group_arns) > 1 ? { enabled = true } : {}
     content {
     type = "forward"
       forward {
@@ -85,7 +85,7 @@ resource "aws_lb_listener_rule" "shared_endpoint" {
   }
 
   dynamic "condition" {
-    for_each = length(var.restricted_cidrs) > 0 ? { exists = true } : {}
+    for_each = length(var.restricted_cidrs) > 0 ? { enabled = true } : {}
     content {
       source_ip {
         values = var.restricted_cidrs

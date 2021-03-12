@@ -12,6 +12,7 @@ locals {
 data "aws_route53_zone" "dns_zone" {
   count        = var.dns_record_enabled ? 1 : 0
   name         = var.dns_zone
+  zone_id      = var.dns_zone_id
   private_zone = var.is_dns_zone_internal
 }
 

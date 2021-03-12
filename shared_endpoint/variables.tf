@@ -1,3 +1,7 @@
+####################################################################################################
+# Common Variables
+####################################################################################################
+
 variable "vpc_id" {
   description = "(Optional) The ID for the VPC within which resources will be created."
   type        = string
@@ -10,20 +14,31 @@ variable "vpc_tags" {
   default     = null
 }
 
-variable "dns_zone" {
-  description = "(Optional) A name for the DNS zone within which service records should be created.  Required unless dns_record_enabled == false."
+####################################################################################################
+# Shared Endpoint Variables
+####################################################################################################
+
+variable "name" {
+  description = "(Required) The name of the service for which this module routes."
   type        = string
+}
+
+variable "dns_zone_id" {
+  description = "(Optional) The ID of the DNS zone within which service records should be created."
+  type        = string
+  default     = null
+}
+
+variable "dns_zone" {
+  description = "(Optional) A name for the DNS zone within which service records should be created."
+  type        = string
+  default     = null
 }
 
 variable "is_dns_zone_internal" {
   description = "(Optional) Whether or not the DNS zone for this service is internal or external."
   type        = bool
   default     = false
-}
-
-variable "name" {
-  description = "(Required) The name of the service for which this module routes."
-  type        = string
 }
 
 variable "alb_arn" {

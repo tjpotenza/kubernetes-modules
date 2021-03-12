@@ -1,6 +1,8 @@
 locals {
-  region   = data.aws_region.current.name
-  endpoint = "${var.name}.${var.dns_zone}"
+  region      = data.aws_region.current.name
+  dns_zone_id = var.dns_record_enabled ? data.aws_route53_zone.dns_zone[0].zone_id : ""
+  dns_zone    = var.dns_record_enabled ? data.aws_route53_zone.dns_zone[0].name : ""
+  endpoint    = "${var.name}.${local.dns_zone}"
 
   shared_target_group_enabled              = lookup(var.shared_target_group, "enabled", false)
   shared_target_group_protocol             = lookup(var.shared_target_group, "protocol", "HTTP")
