@@ -20,8 +20,8 @@ module "nginx_use1" {
 ```
 
 ## Variables
-"| Name | Description | Type, Default |
-"|------|-------------|---------------|
+| Name | Description | Type, Default |
+|------|-------------|---------------|
 | `alb_arn` | (Optional) The ARN of the ALB the Route53 Records will point to, and for which the rules will be created.  Required if alb_name is not set. | (type: string, default: null)_ |
 | `alb_name` | (Optional) A unique name of the ALB the Route53 Records will point to, and for which the rules will be created.  Required if alb_arn is not set. | (type: string, default: null)_ |
 | `alb_port` | (Optional) The port of the ALB Listener for which the service's rules should be associated. | (type: number, default: 443)_ |
@@ -42,8 +42,8 @@ module "nginx_use1" {
 | `weights` | (Optional) A map of cluster names if they should have special weighting applied.  Any clusters not included in this map will receive a weight of 1. | (type: map(number), default: {})_ |
 
 ## Outputs
-"| Name | Description |
-"|------|-------------|
+| Name | Description |
+|------|-------------|
 | `shared_target_group_arn` | ARN of the shared target group, if one was created. |
 
 ## Resources Used
