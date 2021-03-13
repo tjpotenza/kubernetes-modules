@@ -16,7 +16,7 @@ To provide a platform for several of my hobby projects, while also being one of 
 * During general operation, both Control Plane and Node instances will automatically join their cluster on startup, and will gracefully drain, cordon, then remove themselves from the cluster on shutdown.
 * During general operation, the `etcd` members running on Control Plane instances will also join their cluster on startup and gracefully remove themselves on shutdown.
 * A cluster can invoke the `Control Plane` and `Node Group` modules several times, allowing for a heterogenous deployment of instances, versions, or settings.
-* Nodes have the `topology.kubernetes.io/zone` label set to their Availability Zone (ie `us-east-1a`), so stateful services that require a EBS Volumes (ie `prometheus`) can use `nodeSelectors` to be placed consistently within the same AZ as their EBS Volumes, and a `node_group` can be created with `subnet_filters = { availability-zone: ["us-east-1a"] }` to ensure there's always instances in those Availability Zones.
+* Nodes have the `topology.kubernetes.io/zone` label set to their Availability Zone (ie `us-east-1a`), so stateful services that require EBS Volumes (ie `prometheus`) can use `nodeSelectors` to be placed consistently within the same AZ as their EBS Volumes, and dedicated a `node_group` can be created with `subnet_filters = { availability-zone: ["us-east-1a"] }` to ensure there's always instances in those Availability Zones.
 
 ## Overview
 
@@ -24,21 +24,22 @@ To provide a platform for several of my hobby projects, while also being one of 
 
 _Note: There's a lot of variables, locals, and userdata bits shared between these modules, so I've symlinked common files where applicable.  Anywhere there is a symlink, the source of truth is the copy within [`control_plane`](./control_plane)_
 
-There are two types of module in this repo: several that directly correspond to components of a Kubernetes clusters, and a few Quailty-of-Life modules for related resources.  A full example of these modules being exercised to create a cluster can be found under [example/](./example/).  The rough breakdown of these modules is as follows:
+There are two types of module in this repo: several that directly correspond to components of a Kubernetes clusters, and a few Quailty-of-Life modules for related resources.  The rough breakdown of these modules is as follows:
 
-Kubernetes-specific modules:
+**Kubernetes-specific modules:**
 * The [`cluster_baseline`](./cluster_baseline) module creates most of the auxiliary resources for a cluster, such as target groups, IAM roles, security groups, and ALB listener rules.
 * The [`control_plane`](./control_plane) module creates a group of control plane instances.  Many different control plane instance groups can be associated with the same cluster.
 * The [`node_group`](./node_group) module creates a group of nodes for running the majority of the workload.  Many different node instance groups can be associated with the same cluster.
 * The [`shared_endpoint`](./shared_endpoint) module creates a DNS record and ALB Listener Rule for a service that can route requests across one or more clusters.
 
-Quality-of-Life modules:
+**Quality-of-Life modules:**
 * The [`certificate`](./certificate) module creates an ACM certificate and validates it with DNS-based validation.
 * The [`shared_alb`](./shared_alb) module manages an ALB and just the resources that'd be needed for a fairly typical use-case (namely listeners on ports `80`/`443` and security groups allowing connectivity into the ALB and between the ALB and any downstream instances).
 
-Dependent resources discussed within that are not currently managed by modules in this repo are:
+**Dependent resources discussed within that are not currently managed by modules in this repo are:**
 * Any DNS Zones themselves.
 * A Route53 alias record of format `*.{region}.{dns_zone}` pointed to the Shared ALB(s), if using the automatic ingress setup.
+* The Key Pairs needed for SSHing onto the instances.
 
 To offer a rough diagram of the core resources managed by these modules and how they interact in a simple single-cluster deployment:
 ```
@@ -80,9 +81,9 @@ To offer a rough diagram of the core resources managed by these modules and how 
 ### Opinionated Networking Setup
 
 #### Automatic Ingress
-These modules support automatically creating ingress routes for each cluster of format `{service}--{cluster}.{region}.{dns_zone}`.  These are meant more for developing/validating service and to establish a spec for internal cross-cluster communication, such as for telemetry and log aggregation.  The naming structure was chosen to be as re-useable as possible, considering the single-level restriction on DNS and Certificate wildcards.  The double-hyphen was chosen as a delimiter between service and cluster that _shouldn't_ ever come up in regular usage, and should be safe from accidental collisions.
+These modules support automatically creating ingress routes for each cluster of format `{service}--{cluster}.{region}.{dns_zone}`.  These are meant more for developing/validating service and to establish a consistent spec for internal cross-cluster communication, such as for telemetry and log aggregation.  The naming structure was chosen to be as re-useable as possible, considering the single-level restriction on DNS and Certificate wildcards.  The double-hyphen was chosen as a delimiter between service and cluster that _shouldn't_ ever come up in regular usage, and should be safe from accidental collisions.
 
-**Prerequisites**: In the general case, a wildcard DNS record per-region (such as `*.{region}.{dns_zone}`) must exist and be pointed to an `ALB` within the region ([`shared_alb`](./shared_alb)).  That `ALB` should have an attached certificate whose SANs include `*.{region}.{dns_zone}` ([`certificate`](./certificate)).  Each cluster gets a rule on the listener for port `443` that matches `*--{cluster}.{region}.{dns_zone}` and routes to a target group that contains that cluster's instances ([`cluster_baseline`](./cluster_baseline)).
+**Prerequisites**: In the general case, a wildcard DNS record per-region (such as `*.{region}.{dns_zone}`) must exist and be pointed to an ALB within the region ([`shared_alb`](./shared_alb)).  That ALB should have an attached certificate whose SANs include `*.{region}.{dns_zone}` ([`certificate`](./certificate)).  Each cluster gets a rule on the listener for port `443` that matches `*--{cluster}.{region}.{dns_zone}` and routes to a target group that contains that cluster's instances ([`cluster_baseline`](./cluster_baseline)).
 
 The basic overview of what resources are used in this setup and whether they are managed as part of shared, cluster-specific, or endpoint-specific config is outlined in the diagrams below.
 
@@ -103,11 +104,13 @@ The basic overview of what resources are used in this setup and whether they are
 
 ### Shared Endpoints
 
-The `shared_endpoint` module is designed to create a shorter, better looking, regional DNS record for a particular service that can route between one or more clusters, and creates a rule for it on the ALB behind that DNS record (Latency-based DNS by default, so that a service can operate out of multiple regions).  That endpoint can be associated with the clusters behind it in two distinct manners; one that works well for `Ingress`-based services and one that works well for `NodePort`-based services.
+The `shared_endpoint` module is designed to create a shorter more permanent DNS record for a particular service that is running in one or more clusters.
+
+It creates a Latency-based DNS record for that endpoint in the region, pointed to an ALB Listener Rule that will route requests across one or more clusters within the region.  That endpoint can be associated with the clusters behind it in two distinct manners; one that works well for `Ingress`-based services and one that works well for `NodePort`-based services.
 
 #### `Ingress`-Based
 
-The `shared_endpoint` module can accept a map of `Target Groups` that will _all_ be attached to the `Listener Rule` and can be individually weighted.  This setup allows for more readable Terraform in my opinion, and easily allows for different clusters within a region to receive different proportions of traffic.  It does _not_ allow for the ALB to automatically remove a cluster from rotation based on healthchecks, however: even if all members of a Target Group are unavailable, the ALB will continue to route the same share of the traffic to its failure in that Target Group nonetheless.  This also means that a cluster's Target Group can not be associated with a service until that service is deployed to the cluster, otherwise that share of traffic would fail.
+The `shared_endpoint` module can accept a map of `Target Groups` that will _all_ be attached to the `Listener Rule` and can be individually weighted.  This setup allows for more readable Terraform in my opinion, and easily allows for different clusters within a region to receive different proportions of traffic.  It does _not_ allow for the ALB to automatically remove a cluster from rotation based on healthchecks, however: even if all members of a Target Group are unavailable, the ALB will not redistribute that Target Group's share of the traffic and instead will allow those requests to continually fail.  This also means that a cluster's Target Group can not be associated with a service until that service is deployed to the cluster, otherwise that share of traffic would fail.
 
 _(Target Group healthchecks can also not currently pass a `Host` header, so they are not able to evaluate the health of a particular service when routing to an `Ingress`-based service; just the health of the entire instance instead typically)_
 
@@ -128,9 +131,9 @@ _(Target Group healthchecks can also not currently pass a `Host` header, so they
 
 #### `NodePort`-Based
 
-The `shared_endpoint` module _can also_ be configured "in reverse", where a service-specific Target Group is created for passing into `cluster_baseline`, `control_plane`, and `node_group` invocations to have those clusters' instances directly attached to a single Target Group.
+The `shared_endpoint` module _can also_ be configured "in reverse", where a service-specific Target Group is created for passing into `cluster_baseline`, `control_plane`, and `node_group` invocations to have those clusters' instances directly attached.
 
-There's a few distinct pros and cons to having all clusters' instance comingled in the same Target Group; it means that with Target Group Healthchecks enabled, a cluster that has entirely failed _will automatically stop receiving traffic altogether, shifting the remainder onto the remaining clusters entirely_.
+There's a few distinct pros and cons to having all clusters' instance co-mingled in the same Target Group; it means that with Target Group Healthchecks enabled, a cluster that has entirely failed _will automatically stop receiving traffic altogether, shifting the remainder onto the remaining clusters entirely_.
 
 This pattern works best when configured with `NodePort`-based services, so that the Target Group Healthchecks can be used to evaluate _just_ that service's health.  When deployed in this fashion, traffic can be routed between clusters on a per-service basis.  Additionally, a cluster can be added to a service's `shared_endpoint` before that service is fully deployed there; traffic will not be routed to that cluster until the service reports as available.
 
@@ -151,6 +154,14 @@ _(The biggest consideration to be mindful of with this architecture's probably t
 +------------------------------------------------------------------------------------------------------------------------------+--------------------------+
 ```
 
+### Accessing the Cluster
+
+See the helper script at [`scripts/generate_kubeconfig.sh`](./scripts/generate_kubeconfig.sh) for more details on the current mechanism for granting local access to the cluster.  At a high level, it depends on local SSH access being available to the Control Plane instances, and local IAM permissions for _at least_ `ec2:DescribeInstances` to discover the Control Plane. A sample invocation would be:
+
+```bash
+REGION="us-east-1" ./scripts/generate_kubeconfig.sh <cluster name>
+```
+
 ## Roadmap / Planned Changes / Wish List
 
 A few of the ideas I've been mulling over, but haven't had the opportunity to implement are:
@@ -160,12 +171,13 @@ A few of the ideas I've been mulling over, but haven't had the opportunity to im
 * Add a bit more durability and retry logic into the auto-join and auto-leave logic.
 * Move a few more of the manifests and Helm Charts I use within K8S into this repo.
 * Swap out the slightly-janky `worker-bootstrapper` tool for something that features better access controls against the cluster tokens/certificate.  Current plan's a single-pod Vault deployment with no persistence that at each startup fully initializes itself, stores relevant secrets, and configures an `aws` auth backend to allow instances within the cluster to authenticate with an IAM role and retrieve the `node-token` / `ServiceAccount` credentials.
-* Look into implementing other identity providers, such as OIDC.
+* Look into implementing other RBAC identity providers, such as OIDC.
+* Add `terratest` or some other testing framework to help catch regressions and breaking changes.
 
 ## Restrictions, Quirks, and Assumptions
 
-`ALB`'s do not currently support TLS passthrough, so the Control Plane API endpoint cannot be fronted by the same `ALB` as all other traffic.  I cheat my way around paying for an `NLB` by implementing discount-service-discovery with `aws ec2 describe-instances` and [looking up Control Plane instance IPs when needed](./node_group/user_data/k3s/discover-control-plane.sh).
+`ALB`'s do not currently support TLS passthrough, so the Control Plane API endpoint cannot be fronted by the same `ALB` as all other traffic.  I cheat my way around paying for an `NLB` by implementing a discount form of service discovery with `aws ec2 describe-instances` and [looking up Control Plane instance IPs when needed](./node_group/user_data/k3s/discover-control-plane.sh).
 
-In my limited testing, it seems Kubernetes (or at least `k3s`) only uses the given control plane address for initially discovering a cluster, and doesn't seem to mind if that particular address becomes unavailable subsequently.  Given that, I've seen success just having this discovery step toss an entry into `/etc/hosts`, and appending an invocation of it onto each node's `systemd` unit as a `ExecStartPre` directive.  Anywhere else that depends on finding the Control Plane (such as the [graceful-shutdown](./control_plane/user_data/k3s/graceful-shutdown.sh) tooling) will refresh that lookup with retries, assuming it'll get a hit _eventually_.
+In my limited testing, it seems Kubernetes (or at least `k3s`) only uses the given control plane address for initially discovering a cluster, and doesn't seem to mind if that particular address becomes unavailable subsequently.  Given that, I've seen success by having this discovery step update an entry in `/etc/hosts`, and appending an invocation of it onto each node's `systemd` unit as a `ExecStartPre` directive.  Anywhere else that depends on finding the Control Plane (such as the [graceful-shutdown](./control_plane/user_data/k3s/graceful-shutdown.sh) tooling) can refresh that lookup with retries, assuming it'll get a hit _eventually_.
 
 That's all a kind of ugly hack, however has been _good enough_ for most of my use-cases, and definitely worth $15/month to me.  If I stumble upon any bigger vulnerabilities or weaknesses to it I'll revisit the pattern or consider replacing it (either with an `NLB` or maybe "real" service-discovery tech like Consul.)
