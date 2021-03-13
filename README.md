@@ -19,10 +19,11 @@ To provide a platform for several of my hobby projects, while also being one of 
 * Nodes have the `topology.kubernetes.io/zone` label set to their Availability Zone (ie `us-east-1a`), so stateful services that require EBS Volumes (ie `prometheus`) can use `nodeSelectors` to be placed consistently within the same AZ as their EBS Volumes, and dedicated a `node_group` can be created with `subnet_filters = { availability-zone: ["us-east-1a"] }` to ensure there's always instances in those Availability Zones.
 
 ## Overview
+An end-to-end example of one way these modules can all be used to manage a cluster and its auxiliary resources can be found [`./example`](./example).
 
 ### General Structure
 
-_Note: There's a lot of variables, locals, and userdata bits shared between these modules, so I've symlinked common files where applicable.  Anywhere there is a symlink, the source of truth is the copy within [`control_plane`](./control_plane)_
+_Note: There's a lot of variables, locals, and userdata bits shared between these modules, so I've symlinked common files where applicable to minimize duplication.  Anywhere there is a symlink, the source of truth is the copy within [`control_plane`](./control_plane)_
 
 There are two types of module in this repo: several that directly correspond to components of a Kubernetes clusters, and a few Quailty-of-Life modules for related resources.  The rough breakdown of these modules is as follows:
 
