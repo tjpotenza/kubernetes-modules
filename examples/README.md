@@ -165,7 +165,7 @@ module "apollo_node_group_reserved" {
 }
 ```
 
-## Building a Shared Service Endpoint: Nginx
+## Building a Shared Service Endpoint: Blog
 ```terraform
 # blog.example.com
 module "blog_us-east-1" {
