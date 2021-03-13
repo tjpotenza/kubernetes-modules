@@ -59,9 +59,6 @@ resource "aws_security_group" "ingress_instance_restricted" {
   }
 }
 
-
-
-
 resource "aws_security_group" "egress_all" {
   name        = "egress-all"
   vpc_id      = data.aws_vpc.main.id
