@@ -4,10 +4,6 @@ set -o errexit -o pipefail
 current_path=$( builtin cd "$(dirname "${BASH_SOURCE[0]}")" > "/dev/null" 2>&1; pwd )
 source "${current_path}/lib/cli.sh"
 
-################################################################################
-# Check parameters and set defaults for overrideable values
-################################################################################
-
 description="
 NAME
     generate_kubeconfig - Given a cluster name, attempts to look it up and
@@ -40,11 +36,8 @@ OUTPUT
 ################################################################################
 
 cluster_name="${1}"
-if [[ "${cluster_name}" == "" ]]; then
-    log fatal "A cluster name must be provided."
-fi
 
-if [[ "${cluster_name}" == "-h" || "${cluster_name}" == "--help" ]]; then
+if [[ "${cluster_name}" == "" || "${cluster_name}" == "-h" || "${cluster_name}" == "--help" ]]; then
     printf "%s\n" "$description"
     exit 0
 fi
@@ -78,7 +71,6 @@ control_plane_instance_ip=$(
 # Use that instance's kubectl via SSH to retrieve SA credentials
 ################################################################################
 
-# kubectl="${SSH} -oStrictHostKeyChecking=accept-new -oUserKnownHostsFile="/dev/null" ${SSH_USER}@${control_plane_instance_ip} ${SSH_KUBECTL}"
 kubectl="${SSH} -oStrictHostKeyChecking=accept-new -oUserKnownHostsFile="/dev/null" -oLogLevel="QUIET" ${SSH_USER}@${control_plane_instance_ip} ${SSH_KUBECTL}"
 
 log info "Retrieving name of secrets attached to serviceaccount [${SA_NAME}] from [${control_plane_instance_ip}]..."
