@@ -1,4 +1,4 @@
-# Module: `node_group`
+# Module: `control_plane`
 
 ---
 
@@ -7,7 +7,7 @@ Creates a group of control plane instances.  Many different control plane instan
 ## Example
 
 ```terraform
-module "apollo" {
+module "apollo_control_plane" {
   source               = "../kubernetes-modules/control_plane"
   cluster_name         = "apollo"
   instances            = 1
